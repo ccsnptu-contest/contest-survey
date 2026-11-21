@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全國高中職專題競賽 滿意度調查</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f0f4f8;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        /* Tech circuit grid pattern for Hero Banner */
+        .tech-hero-bg {
+            background: linear-gradient(135deg, #06182c 0%, #0c3559 55%, #0e7490 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        /* Custom animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        .wheel-container {
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #0284c7;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0369a1;
+        }
+        /* Prose styling for AI Report */
+        .prose h2 { font-size: 1.25rem; font-weight: 700; color: #0c3559; margin-top: 1.25rem; margin-bottom: 0.5rem; border-bottom: 2px solid #bae6fd; padding-bottom: 0.25rem; }
+        .prose h3 { font-size: 1.1rem; font-weight: 600; color: #0369a1; margin-top: 1rem; margin-bottom: 0.4rem; }
+        .prose p { margin-bottom: 0.75rem; color: #334155; line-height: 1.6; }
+        .prose ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; color: #334155; }
+        .prose li { margin-bottom: 0.25rem; }
+        .prose strong { color: #0f172a; font-weight: 600; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar (Tech Contest Header) -->
+    <header class="bg-[#06182c]/95 backdrop-blur-md border-b border-cyan-500/30 sticky top-0 z-40 shadow-lg">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-cyan-500/30 border border-cyan-300/40">
+                    <i data-lucide="cpu" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-bold text-base sm:text-lg text-white leading-tight tracking-wide">專題競賽活動滿意度調查</h1>
+                        <span class="hidden md:inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">2026 CONTEST</span>
+                    </div>
+                    <p class="text-xs text-cyan-200/80 hidden sm:block">問卷回饋 • 信箱驗證 • 幸運轉盤 • AI 數據洞察</p>
+                </div>
+            </div>
+
+            <!-- Mode Switcher (User vs Admin Dashboard) -->
+            <div class="flex items-center bg-slate-900/80 p-1 rounded-xl border border-cyan-500/30">
+                <button id="nav-survey-btn" onclick="switchView('survey')" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-sm flex items-center gap-1.5">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                    <span>填寫問卷</span>
+                </button>
+                <button id="nav-admin-btn" onclick="switchView('admin')" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white flex items-center gap-1.5">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                    <span>分析報告 & 後台</span>
+                    <span id="response-count-badge" class="ml-1 bg-amber-400 text-slate-950 text-xs font-extrabold px-2 py-0.5 rounded-full">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contest Hero Banner -->
+    <div class="tech-hero-bg text-white border-b-4 border-amber-400 shadow-md">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10 relative z-10">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div class="space-y-2.5">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-400/15 border border-cyan-300/30 text-cyan-200 text-xs font-semibold tracking-wider">
+                        <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                        <span>NATIONAL PROJECT CONTEST • 活動意見回饋與抽獎專區</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white drop-shadow-sm">
+                        全國高中職專題競賽 <span class="text-cyan-300">滿意度調查</span>
+                    </h2>
+                    <p class="text-sm text-slate-200 max-w-xl leading-relaxed">
+                        感謝各位師生與貴賓熱情參與本次競賽盛會！完成電子信箱驗證並填寫回饋問卷，即可立即啟動幸運轉盤抽取精美紀念好禮。
+                    </p>
+                </div>
+                <div class="flex sm:flex-row md:flex-col gap-2.5 shrink-0 w-full md:w-auto">
+                    <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-xl px-4 py-2.5 flex items-center gap-3 flex-1">
+                        <div class="w-8 h-8 rounded-lg bg-amber-400/20 text-amber-300 flex items-center justify-center font-bold">
+                            <i data-lucide="award" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <p class="text-[11px] text-cyan-200">完填專屬回饋</p>
+                            <p class="text-xs font-bold text-white">人人有獎 • 330 份好禮</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-xl px-4 py-2.5 flex items-center gap-3 flex-1">
+                        <div class="w-8 h-8 rounded-lg bg-cyan-400/20 text-cyan-300 flex items-center justify-center font-bold">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <p class="text-[11px] text-cyan-200">公平抽獎機制</p>
+                            <p class="text-xs font-bold text-white">信箱驗證 • 限領乙次</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Notification Banner / Toast (Replaces alert) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 py-8">
+
+        <!-- ========================================== -->
+        <!-- VIEW 1: USER SURVEY & LOTTERY FLOW         -->
+        <!-- ========================================== -->
+        <div id="view-survey" class="space-y-6">
+            
+            <!-- Progress Stepper -->
+            <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-sky-200/80">
+                <div class="flex items-center justify-between relative">
+                    <div class="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-slate-100 -z-0 rounded-full"></div>
+                    <div id="progress-line" class="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-gradient-to-r from-cyan-500 to-blue-600 transition-all duration-500 -z-0 rounded-full" style="width: 0%;"></div>
+                    
+                    <!-- Step 1 -->
+                    <div class="relative z-10 flex flex-col items-center">
+                        <div id="step-circle-1" class="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-bold flex items-center justify-center text-sm shadow-md ring-4 ring-white transition-colors">1</div>
+                        <span id="step-label-1" class="text-xs font-semibold text-sky-700 mt-1.5">信箱驗證</span>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="relative z-10 flex flex-col items-center">
+                        <div id="step-circle-2" class="w-9 h-9 rounded-full bg-slate-200 text-slate-500 font-bold flex items-center justify-center text-sm ring-4 ring-white transition-colors">2</div>
+                        <span id="step-label-2" class="text-xs font-medium text-slate-500 mt-1.5">填寫問卷</span>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="relative z-10 flex flex-col items-center">
+                        <div id="step-circle-3" class="w-9 h-9 rounded-full bg-slate-200 text-slate-500 font-bold flex items-center justify-center text-sm ring-4 ring-white transition-colors">3</div>
+                        <span id="step-label-3" class="text-xs font-medium text-slate-500 mt-1.5">幸運抽獎</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 1: EMAIL VERIFICATION -->
+            <section id="step-1-panel" class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-sky-200/80 transition-all relative overflow-hidden">
+                <div class="h-1.5 w-full bg-gradient-to-r from-cyan-500 via-blue-600 to-amber-400 absolute top-0 left-0"></div>
+                <div class="max-w-md mx-auto text-center space-y-4 pt-2">
+                    <div class="w-16 h-16 bg-sky-50 text-sky-600 border border-sky-200 rounded-2xl flex items-center justify-center mx-auto animate-float shadow-sm">
+                        <i data-lucide="mail" class="w-8 h-8"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900">請先驗證您的電子信箱</h2>
+                    <p class="text-sm text-slate-600">為確保問卷品質與每人限領一次抽獎資格，請輸入您的電子信箱接收 6 位數驗證碼。</p>
+                </div>
+
+                <div class="max-w-md mx-auto mt-8 space-y-5">
+                    <!-- Email Input -->
+                    <div>
+                        <label for="user-email" class="block text-sm font-semibold text-slate-700 mb-1.5">電子信箱 (Email) <span class="text-rose-500">*</span></label>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input type="email" id="user-email" placeholder="example@email.com" 
+                                class="flex-grow px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all text-slate-800">
+                            <button type="button" id="send-otp-btn" onclick="sendVerificationCode()" 
+                                class="px-5 py-2.5 bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 text-white font-medium rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span>發送驗證碼</span>
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Simulated Email Inbox Notification (Since this is a standalone frontend demo without SMTP server) -->
+                    <div id="demo-otp-box" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-900 flex items-start gap-3">
+                        <i data-lucide="sparkles" class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5"></i>
+                        <div>
+                            <p class="font-semibold">【系統模擬信件通知】</p>
+                            <p class="mt-0.5 text-amber-800">尚未設定 Google Apps Script 網址，目前以模擬模式顯示驗證碼：<span id="demo-otp-code" class="font-mono font-bold text-lg bg-white px-2 py-0.5 rounded border border-amber-300 select-all">------</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Real Email Sent Confirmation Box -->
+                    <div id="real-otp-sent-box" class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-900 flex items-start gap-3">
+                        <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5"></i>
+                        <div>
+                            <p class="font-semibold">驗證信已透過 Google 郵件系統寄出！</p>
+                            <p class="mt-0.5 text-emerald-800">請前往您的信箱（含垃圾郵件匣）查收 6 位數驗證碼並於下方輸入。</p>
+                        </div>
+                    </div>
+
+                    <!-- OTP Input -->
+                    <div id="otp-input-section" class="hidden space-y-4 pt-2 border-t border-slate-100">
+                        <div>
+                            <label for="otp-input" class="block text-sm font-semibold text-slate-700 mb-1.5">輸入 6 位數驗證碼</label>
+                            <input type="text" id="otp-input" maxlength="6" placeholder="請輸入 6 位數字" 
+                                class="w-full px-4 py-3 text-center tracking-[0.5em] font-mono text-xl font-bold rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all">
+                        </div>
+                        <button type="button" onclick="verifyCode()" 
+                            class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-xl shadow-md shadow-emerald-100 transition-all flex items-center justify-center gap-2">
+                            <span>驗證並開始填寫問卷</span>
+                            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STEP 2: SURVEY FORM -->
+            <section id="step-2-panel" class="hidden space-y-6">
+                <!-- Survey Header Card -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-sky-200/80">
+                    <div class="h-2.5 bg-gradient-to-r from-cyan-500 via-blue-600 to-amber-400"></div>
+                    <div class="p-6 sm:p-8">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                                已驗證信箱：<span id="verified-email-display" class="font-semibold"></span>
+                            </span>
+                            <button type="button" onclick="requireAdminForQuestionEditor()" class="text-xs text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 underline">
+                                <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                                自訂/修改問卷題目 (管理者)
+                            </button>
+                        </div>
+                        <h2 id="survey-title" class="text-2xl sm:text-3xl font-bold text-slate-900">全國高中職專題競賽 — 滿意度調查表</h2>
+                        <p id="survey-desc" class="text-slate-600 mt-2 text-sm sm:text-base leading-relaxed">
+                            感謝您撥冗參與本次專題競賽活動！您的寶貴意見將協助我們持續優化賽程規劃與服務品質。完成填答後即可立即參加幸運抽獎！
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Dynamic Questions Container -->
+                <form id="survey-form" onsubmit="submitSurvey(event)" class="space-y-5">
+                    <div id="questions-container" class="space-y-5">
+                        <!-- Questions will be rendered dynamically here -->
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-sky-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <p class="text-sm text-slate-600 flex items-center gap-1.5">
+                            <i data-lucide="gift" class="w-4 h-4 text-amber-500"></i>
+                            送出問卷後將立即解鎖競賽幸運抽獎轉盤！
+                        </p>
+                        <button type="submit" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 text-white font-bold rounded-xl shadow-lg shadow-sky-200 transition-all flex items-center justify-center gap-2">
+                            <span>提交問卷並前往抽獎</span>
+                            <i data-lucide="sparkles" class="w-5 h-5 text-amber-300"></i>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- STEP 3: LOTTERY WHEEL -->
+            <section id="step-3-panel" class="hidden bg-white rounded-2xl p-6 sm:p-10 shadow-sm border border-sky-200/80 text-center relative overflow-hidden">
+                <div class="h-2 w-full bg-gradient-to-r from-cyan-500 via-blue-600 to-amber-400 absolute top-0 left-0"></div>
+                <div class="max-w-lg mx-auto space-y-6 pt-2">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 text-amber-700 font-semibold text-sm border border-amber-200">
+                        <i data-lucide="party-popper" class="w-4 h-4 text-amber-500"></i>
+                        <span>感謝您的填答！獲得 1 次競賽好禮抽獎機會</span>
+                    </div>
+                    
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900">競賽幸運大轉盤</h2>
+                    <p class="text-slate-600 text-sm">點擊下方按鈕啟動轉盤，祝您幸運中獎！</p>
+
+                    <!-- Interactive SVG Lottery Wheel -->
+                    <div class="relative w-72 h-72 sm:w-80 sm:h-80 mx-auto my-6">
+                        <!-- Pointer Arrow -->
+                        <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20 drop-shadow-md">
+                            <svg width="36" height="42" viewBox="0 0 36 42" fill="none">
+                                <path d="M18 42L2.41154 12L33.5885 12L18 42Z" fill="#f59e0b"/>
+                                <circle cx="18" cy="12" r="10" fill="#d97706"/>
+                            </svg>
+                        </div>
+
+                        <!-- Wheel SVG -->
+                        <div id="wheel-spinner" class="w-full h-full rounded-full shadow-xl border-8 border-[#06182c] ring-4 ring-cyan-400/50 overflow-hidden wheel-container relative bg-white">
+                            <svg id="wheel-svg" viewBox="0 0 200 200" class="w-full h-full transform -rotate-90"></svg>
+                        </div>
+
+                        <!-- Center Cap -->
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-[#06182c] rounded-full border-4 border-amber-400 shadow-lg flex items-center justify-center z-10 text-cyan-300 font-bold text-xs tracking-wider">
+                            SPIN
+                        </div>
+                    </div>
+
+                    <!-- Spin Action & Result -->
+                    <div id="lottery-action-area">
+                        <button id="spin-btn" onclick="spinWheel()" class="px-10 py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-extrabold text-lg rounded-2xl shadow-lg shadow-amber-200 transition-all transform hover:scale-105 active:scale-95">
+                            立即啟動轉盤抽獎！
+                        </button>
+                    </div>
+
+                    <!-- Lottery Result Card -->
+                    <div id="lottery-result-card" class="hidden bg-gradient-to-br from-sky-50 to-cyan-50 border-2 border-sky-300 rounded-2xl p-6 space-y-3 animate-fade-in">
+                        <p class="text-sm font-semibold text-sky-700 uppercase tracking-wider">抽獎結果出爐</p>
+                        <h3 id="prize-result-title" class="text-2xl font-extrabold text-slate-900">恭喜獲得：頭獎</h3>
+                        <p id="prize-result-desc" class="text-sm text-slate-600">請憑此畫面至大會服務台領取紀念品。</p>
+                        <div class="pt-4 flex flex-wrap justify-center gap-3">
+                            <button onclick="resetForNewUser()" class="px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium rounded-xl text-sm transition-all">
+                                模擬下一位填答者
+                            </button>
+                            <button onclick="switchView('admin')" class="px-5 py-2.5 bg-sky-700 hover:bg-sky-800 text-white font-medium rounded-xl text-sm shadow-sm transition-all flex items-center gap-1.5">
+                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                                查看滿意度分析報告
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- VIEW 2: ADMIN DASHBOARD & AI REPORT        -->
+        <!-- ========================================== -->
+        <div id="view-admin" class="hidden space-y-6">
+            
+            <!-- Admin Sub-Navigation & Demo Data Loader -->
+            <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-xl font-bold text-slate-900">問卷分析儀表板 & 獎項設定</h2>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> 管理者已登入
+                        </span>
+                    </div>
+                    <p class="text-sm text-slate-500 mt-0.5">即時統計滿意度指標、自動生成文字洞察報告，並可自訂抽獎參數。</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="loadMockResponses()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs sm:text-sm transition-all flex items-center gap-1.5">
+                        <i data-lucide="database" class="w-4 h-4 text-indigo-600"></i>
+                        匯入模擬填答數據
+                    </button>
+                    <button onclick="logoutAdmin()" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-medium rounded-xl text-xs sm:text-sm transition-all flex items-center gap-1.5">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                        登出管理後台
+                    </button>
+                </div>
+            </div>
+
+            <!-- Key Metrics Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-slate-500">有效驗證問卷數</span>
+                        <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                            <i data-lucide="users" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p id="stat-total-responses" class="text-3xl font-bold text-slate-900 mt-2">0</p>
+                    <p class="text-xs text-emerald-600 mt-1 flex items-center gap-1">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> 100% 完成信箱驗證
+                    </p>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-slate-500">整體平均滿意度</span>
+                        <div class="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                            <i data-lucide="star" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-2 mt-2">
+                        <p id="stat-avg-score" class="text-3xl font-bold text-slate-900">0.0</p>
+                        <span class="text-sm text-slate-400">/ 5.0 分</span>
+                    </div>
+                    <p id="stat-satisfaction-rate" class="text-xs text-slate-500 mt-1">正面評價佔比：0%</p>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-slate-500">已抽出獎項數量</span>
+                        <div class="w-9 h-9 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center">
+                            <i data-lucide="gift" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p id="stat-prizes-won" class="text-3xl font-bold text-slate-900 mt-2">0</p>
+                    <p id="stat-prizes-remaining" class="text-xs text-slate-500 mt-1">總獎品池共 330 份</p>
+                </div>
+            </div>
+
+            <!-- AI Satisfaction Analysis Report Section -->
+            <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-sm">
+                            <i data-lucide="sparkles" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">自動問卷滿意度彙整報告</h3>
+                            <p class="text-xs text-slate-500">結合量化統計與 AI 質化語意分析，一鍵產出完整評估報告</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="generate-report-btn" onclick="generateSatisfactionReport()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-sm transition-all flex items-center gap-2">
+                            <i data-lucide="file-Spreadsheet" class="w-4 h-4"></i>
+                            <span>生成完整分析報告</span>
+                        </button>
+                        <button id="copy-report-btn" onclick="copyReportText()" class="hidden px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-sm transition-all flex items-center gap-1.5" title="複製報告內容">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                            <span>複製</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Visual Breakdown Bars -->
+                <div id="charts-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">
+                    <!-- Dynamic Question Charts -->
+                </div>
+
+                <!-- Generated Narrative Report Output -->
+                <div id="report-output-container" class="bg-slate-50 rounded-xl p-6 border border-slate-200 min-h-[180px]">
+                    <div id="report-placeholder" class="text-center py-8 text-slate-400 space-y-2">
+                        <i data-lucide="file-text" class="w-10 h-10 mx-auto opacity-50"></i>
+                        <p class="text-sm">點擊上方「生成完整分析報告」，系統將自動彙整所有問卷數據與開放式建議，撰寫成結構化報告。</p>
+                    </div>
+                    <div id="report-loading" class="hidden text-center py-10 space-y-3">
+                        <div class="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                        <p class="text-sm font-medium text-indigo-600">正在分析問卷數據與填答者回饋，彙整報告中...</p>
+                    </div>
+                    <div id="report-content" class="hidden prose max-w-none"></div>
+                </div>
+            </div>
+
+            <!-- Reserved Lottery Settings (Placeholder for future data) -->
+            <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="sliders" class="w-5 h-5 text-pink-600"></i>
+                            抽獎獎品與機率設定
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-1">已依總數 330 份自動精算對應中獎率（總和 100%），抽中後系統將自動扣除剩餘庫存。</p>
+                    </div>
+                    <button onclick="addPrizeRow()" class="px-3 py-1.5 bg-pink-50 hover:bg-pink-100 text-pink-700 font-medium rounded-lg text-xs transition-all flex items-center gap-1">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i> 新增獎項
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                                <th class="py-3 px-2">獎項名稱</th>
+                                <th class="py-3 px-2">剩餘數量 (個)</th>
+                                <th class="py-3 px-2">中獎權重/機率 (%)</th>
+                                <th class="py-3 px-2">轉盤顏色</th>
+                                <th class="py-3 px-2 text-right">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prize-settings-tbody" class="divide-y divide-slate-100 text-sm">
+                            <!-- Prize rows rendered dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="flex justify-between items-center pt-2">
+                    <span id="total-prob-display" class="text-xs font-medium text-slate-500">目前總機率：100%</span>
+                    <button onclick="savePrizeSettings()" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl text-sm transition-all">
+                        儲存抽獎設定
+                    </button>
+                </div>
+            </div>
+
+            <!-- Google Apps Script (GAS) Integration Settings -->
+            <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-sky-200 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="cloud-cog" class="w-5 h-5 text-sky-600"></i>
+                            Google Apps Script 真實寄信與試算表同步設定
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-1">貼上您部署的 GAS 網頁應用程式網址（Web App URL），即可啟用真實寄發驗證碼並自動將問卷與中獎紀錄寫入 Google 試算表。</p>
+                    </div>
+                    <span id="gas-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 self-start">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        目前為本機模擬模式
+                    </span>
+                </div>
+
+                <div class="space-y-3">
+                    <label for="gas-url-input" class="block text-sm font-semibold text-slate-700">Google Apps Script 網頁應用程式網址 (Exec URL)</label>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="url" id="gas-url-input" placeholder="https://script.google.com/macros/s/AKfycb.../exec"
+                            class="flex-grow px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none text-sm font-mono">
+                        <button type="button" onclick="saveGasSettings()" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-xl text-sm shadow-sm transition-all whitespace-nowrap">
+                            儲存並啟用連線
+                        </button>
+                        <button type="button" onclick="copyGasScriptCode()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-sm transition-all flex items-center justify-center gap-1.5 whitespace-nowrap">
+                            <i data-lucide="code-2" class="w-4 h-4 text-sky-600"></i>
+                            <span>複製 GAS 後端程式碼</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Individual Responses Table -->
+            <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900">填答與抽獎明細紀錄</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">刪除紀錄時，若該筆已抽中獎項，系統將自動回補對應獎品庫存數量 +1。</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                                <th class="py-3 px-3">驗證信箱</th>
+                                <th class="py-3 px-3">基本資料</th>
+                                <th class="py-3 px-3">填答時間</th>
+                                <th class="py-3 px-3">平均滿意度</th>
+                                <th class="py-3 px-3">抽獎結果</th>
+                                <th class="py-3 px-3">其他意見</th>
+                                <th class="py-3 px-3 text-right">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="responses-tbody" class="divide-y divide-slate-100 text-sm">
+                            <tr>
+                                <td colspan="7" class="py-8 text-center text-slate-400">尚無填答紀錄，請先填寫問卷或點擊上方「匯入模擬填答數據」。</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Contest Footer -->
+    <footer class="bg-[#06182c] text-slate-300 border-t border-cyan-500/20 mt-12">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+            <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 flex items-center justify-center">
+                    <i data-lucide="cpu" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <p class="font-semibold text-white">全國高中職專題競賽 — 活動滿意度調查與抽獎系統</p>
+                    <p class="text-slate-400 mt-0.5">© 2026 National Project Contest. All Rights Reserved.</p>
+                </div>
+            </div>
+            <div class="text-slate-400 flex items-center gap-4">
+                <span>信箱驗證防護</span>
+                <span>•</span>
+                <span>即時庫存控管</span>
+                <span>•</span>
+                <span>自動報告彙整</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========================================== -->
+    <!-- MODAL: ADMIN LOGIN GATE                    -->
+    <!-- ========================================== -->
+    <div id="admin-login-modal" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-sky-200">
+            <div class="h-2 bg-gradient-to-r from-cyan-500 via-blue-600 to-amber-400"></div>
+            <div class="p-6 sm:p-8 space-y-5">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-[#06182c] text-cyan-300 flex items-center justify-center shadow-md border border-cyan-500/30">
+                            <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-900">管理者身分驗證</h3>
+                            <p class="text-xs text-slate-500">請輸入管理員帳號與密碼以存取後台</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeAdminLoginModal()" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <form id="admin-login-form" onsubmit="handleAdminLogin(event)" class="space-y-4">
+                    <div>
+                        <label for="admin-username" class="block text-sm font-semibold text-slate-700 mb-1">管理者帳號</label>
+                        <input type="text" id="admin-username" required autocomplete="username" placeholder="請輸入帳號"
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none text-sm">
+                    </div>
+                    <div>
+                        <label for="admin-password" class="block text-sm font-semibold text-slate-700 mb-1">管理者密碼</label>
+                        <input type="password" id="admin-password" required autocomplete="current-password" placeholder="請輸入密碼"
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none text-sm">
+                    </div>
+                    <div class="pt-2 flex gap-2.5">
+                        <button type="button" onclick="closeAdminLoginModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition-all">
+                            取消
+                        </button>
+                        <button type="submit" class="flex-1 py-2.5 bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 text-white font-semibold rounded-xl text-sm shadow-md transition-all flex items-center justify-center gap-1.5">
+                            <i data-lucide="log-in" class="w-4 h-4"></i>
+                            <span>登入後台</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: CUSTOMIZE SURVEY QUESTIONS          -->
+    <!-- ========================================== -->
+    <div id="question-editor-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div>
+                    <h3 class="font-bold text-lg text-slate-900">編輯問卷題目結構</h3>
+                    <p class="text-xs text-slate-500">可依據您的 Google 表單題目自由增減或修改標題與選項</p>
+                </div>
+                <button onclick="closeQuestionEditorModal()" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="modal-questions-list" class="p-6 overflow-y-auto space-y-4 flex-grow">
+                <!-- Editable questions rendered here -->
+            </div>
+            <div class="p-4 border-t border-slate-200 bg-slate-50 flex flex-wrap justify-between items-center gap-3">
+                <div class="flex gap-2">
+                    <button type="button" onclick="addNewQuestion('rating')" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-semibold">+ 新增評分題 (1-5分)</button>
+                    <button type="button" onclick="addNewQuestion('choice')" class="px-3 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-lg text-xs font-semibold">+ 新增單選題</button>
+                    <button type="button" onclick="addNewQuestion('text')" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-semibold">+ 新增簡答題</button>
+                </div>
+                <button type="button" onclick="saveQuestionsFromModal()" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-sm">
+                    套用變更
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: CONFIRM DELETE RESPONSE             -->
+    <!-- ========================================== -->
+    <div id="delete-confirm-modal" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-rose-200">
+            <div class="h-2 bg-gradient-to-r from-rose-500 to-amber-500"></div>
+            <div class="p-6 sm:p-7 space-y-4">
+                <div class="flex items-start gap-3.5">
+                    <div class="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-200">
+                        <i data-lucide="trash-2" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-900">確認刪除此筆填答紀錄？</h3>
+                        <p id="delete-confirm-desc" class="text-sm text-slate-600 mt-1 leading-relaxed">
+                            刪除後將無法復原，並自動釋出該電子信箱的填答資格。
+                        </p>
+                    </div>
+                </div>
+                <div class="pt-2 flex justify-end gap-2.5">
+                    <button type="button" onclick="closeDeleteConfirmModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition-all">
+                        取消
+                    </button>
+                    <button type="button" onclick="confirmDeleteResponse()" class="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl text-sm shadow-md shadow-rose-100 transition-all flex items-center gap-1.5">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        <span>確認刪除</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. STATE & DEFAULT DATA CONFIGURATION
+        // ==========================================
+        const ADMIN_ACCOUNT = 'ccs.nptu';
+        const ADMIN_PASSWORD = 'Nccs&2022';
+        let isAdminAuthenticated = false;
+        let pendingAdminAction = null;
+
+        // Google Apps Script Web App URL (Leave empty to run in local simulation mode until configured in Admin panel)
+        let GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxJWzLC5Ir17SPv6NcHmvG7fck5rvEyWkX_82rdoO1byrY827nUW9UQiNe06cBUHMoQpA/exec';
+
+        let surveyQuestions = [
+            {
+                id: 'gender',
+                section: '基本資料',
+                title: '生理性別',
+                type: 'choice',
+                required: true,
+                options: ['男', '女']
+            },
+            {
+                id: 'identity',
+                section: '基本資料',
+                title: '身分',
+                type: 'choice_other',
+                required: true,
+                options: ['學生', '教師']
+            },
+            {
+                id: 'q1',
+                section: '滿意度調查 (1分=非常不滿意，5分=非常滿意)',
+                title: '1. 我對於本次活動主題、內容之滿意度',
+                type: 'rating',
+                required: true
+            },
+            {
+                id: 'q2',
+                title: '2. 我對於本次活動內容符合自己需求',
+                type: 'rating',
+                required: true
+            },
+            {
+                id: 'q3',
+                title: '3. 我對於本次活動內容之助益程度',
+                type: 'rating',
+                required: true
+            },
+            {
+                id: 'q4',
+                title: '4. 我對於本次活動場地的舒適性',
+                type: 'rating',
+                required: true
+            },
+            {
+                id: 'q5',
+                title: '5. 我對於本次活動時間的適切性',
+                type: 'rating',
+                required: true
+            },
+            {
+                id: 'q6',
+                title: '6. 我對於本次活動提升自身表達能力',
+                type: 'rating',
+                required: true
+            },
+            {
+                id: 'q7',
+                title: '7. 我對於再次參與類似活動的意願性',
+                type: 'rating',
+                required: true
+            },
+            {
+                id: 'q8',
+                title: '8. 我對於本次活動整體規劃之滿意度',
+                type: 'rating',
+                required: true
+            },
+            {
+                id: 'q9',
+                title: '9. 我對於本次活動的行政支援與服務滿意度',
+                type: 'rating',
+                required: true
+            },
+            {
+                id: 'q10',
+                title: '10. 其他意見 (若您有上述問題未提及之意見或建議，請予以簡述)：',
+                type: 'text',
+                required: false,
+                placeholder: '請輸入您對本次全國高中職專題競賽的建議或鼓勵...'
+            }
+        ];
+
+        // Confirmed Prize Pool (Total 330 items)
+        let lotteryPrizes = [
+            { id: 'p1', name: '識別證套', quantity: 10, probability: 3.03, color: '#f59e0b' },
+            { id: 'p2', name: '不織布袋', quantity: 50, probability: 15.15, color: '#0284c7' },
+            { id: 'p3', name: '徽章', quantity: 80, probability: 24.24, color: '#0d9488' },
+            { id: 'p4', name: '原子筆', quantity: 90, probability: 27.27, color: '#4f46e5' },
+            { id: 'p5', name: '資料夾', quantity: 100, probability: 30.31, color: '#0891b2' }
+        ];
+
+        let responses = [];
+        let verifiedEmailsSet = new Set();
+        let currentVerifiedEmail = '';
+        let generatedOtp = '';
+        let currentResponseId = null;
+        let currentWheelRotation = 0;
+        let isSpinning = false;
+
+        // ==========================================
+        // 2. NAVIGATION & ADMIN AUTHENTICATION
+        // ==========================================
+        function switchView(viewName) {
+            if (viewName === 'admin' && !isAdminAuthenticated) {
+                pendingAdminAction = () => switchView('admin');
+                openAdminLoginModal();
+                return;
+            }
+
+            const surveyView = document.getElementById('view-survey');
+            const adminView = document.getElementById('view-admin');
+            const navSurveyBtn = document.getElementById('nav-survey-btn');
+            const navAdminBtn = document.getElementById('nav-admin-btn');
+
+            if (viewName === 'survey') {
+                surveyView.classList.remove('hidden');
+                adminView.classList.add('hidden');
+                navSurveyBtn.className = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-sm flex items-center gap-1.5';
+                navAdminBtn.className = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white flex items-center gap-1.5';
+            } else {
+                surveyView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+                navAdminBtn.className = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-sm flex items-center gap-1.5';
+                navSurveyBtn.className = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white flex items-center gap-1.5';
+                updateDashboardStats();
+                renderPrizeSettingsTable();
+            }
+            lucide.createIcons();
+        }
+
+        function openAdminLoginModal() {
+            document.getElementById('admin-username').value = '';
+            document.getElementById('admin-password').value = '';
+            document.getElementById('admin-login-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('admin-username').focus(), 100);
+            lucide.createIcons();
+        }
+
+        function closeAdminLoginModal() {
+            document.getElementById('admin-login-modal').classList.add('hidden');
+            pendingAdminAction = null;
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('admin-username').value.trim();
+            const pass = document.getElementById('admin-password').value;
+
+            if (user === ADMIN_ACCOUNT && pass === ADMIN_PASSWORD) {
+                isAdminAuthenticated = true;
+                const actionToRun = pendingAdminAction;
+                closeAdminLoginModal();
+                showToast('管理者登入成功！', 'success');
+                if (typeof actionToRun === 'function') {
+                    actionToRun();
+                } else {
+                    switchView('admin');
+                }
+            } else {
+                showToast('帳號或密碼錯誤，請重新確認！', 'error');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdminAuthenticated = false;
+            showToast('已安全登出管理後台。', 'info');
+            switchView('survey');
+        }
+
+        function requireAdminForQuestionEditor() {
+            if (!isAdminAuthenticated) {
+                pendingAdminAction = () => openQuestionEditorModal();
+                openAdminLoginModal();
+                return;
+            }
+            openQuestionEditorModal();
+        }
+
+        // ==========================================
+        // 3. STEPPER & EMAIL OTP VERIFICATION
+        // ==========================================
+        function updateStepper(step) {
+            const line = document.getElementById('progress-line');
+            line.style.width = step === 1 ? '0%' : step === 2 ? '50%' : '100%';
+
+            for (let i = 1; i <= 3; i++) {
+                const circle = document.getElementById(`step-circle-${i}`);
+                const label = document.getElementById(`step-label-${i}`);
+                if (i <= step) {
+                    circle.className = 'w-9 h-9 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-bold flex items-center justify-center text-sm shadow-md ring-4 ring-white transition-colors';
+                    label.className = 'text-xs font-semibold text-sky-700 mt-1.5';
+                } else {
+                    circle.className = 'w-9 h-9 rounded-full bg-slate-200 text-slate-500 font-bold flex items-center justify-center text-sm ring-4 ring-white transition-colors';
+                    label.className = 'text-xs font-medium text-slate-500 mt-1.5';
+                }
+            }
+
+            document.getElementById('step-1-panel').classList.toggle('hidden', step !== 1);
+            document.getElementById('step-2-panel').classList.toggle('hidden', step !== 2);
+            document.getElementById('step-3-panel').classList.toggle('hidden', step !== 3);
+            lucide.createIcons();
+        }
+
+        async function sendVerificationCode() {
+            const emailInput = document.getElementById('user-email');
+            const email = emailInput.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!email || !emailRegex.test(email)) {
+                showToast('請輸入有效的電子信箱格式！', 'error');
+                emailInput.focus();
+                return;
+            }
+
+            if (verifiedEmailsSet.has(email.toLowerCase())) {
+                showToast('此電子信箱已完成過問卷與抽獎，每人限參加一次！', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('send-otp-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>發送中...</span>`;
+
+            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+
+            if (GAS_WEB_APP_URL && GAS_WEB_APP_URL.startsWith('https://script.google.com/')) {
+                try {
+                    const response = await fetch(GAS_WEB_APP_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({
+                            action: 'sendOtp',
+                            email: email,
+                            otp: generatedOtp
+                        })
+                    });
+                    const resData = await response.json();
+                    if (resData.status === 'success') {
+                        document.getElementById('demo-otp-box').classList.add('hidden');
+                        document.getElementById('real-otp-sent-box').classList.remove('hidden');
+                        document.getElementById('otp-input-section').classList.remove('hidden');
+                        showToast(`驗證碼已成功寄送至 ${email}！`, 'success');
+                    } else {
+                        throw new Error(resData.message || '寄信失敗');
+                    }
+                } catch (err) {
+                    console.error('GAS sendOtp error:', err);
+                    showToast('GAS 寄信發生錯誤，已切換為畫面顯示驗證碼模式。', 'error');
+                    document.getElementById('demo-otp-code').textContent = generatedOtp;
+                    document.getElementById('demo-otp-box').classList.remove('hidden');
+                    document.getElementById('real-otp-sent-box').classList.add('hidden');
+                    document.getElementById('otp-input-section').classList.remove('hidden');
+                }
+            } else {
+                // Local simulation mode
+                await new Promise(r => setTimeout(r, 400));
+                document.getElementById('demo-otp-code').textContent = generatedOtp;
+                document.getElementById('demo-otp-box').classList.remove('hidden');
+                document.getElementById('real-otp-sent-box').classList.add('hidden');
+                document.getElementById('otp-input-section').classList.remove('hidden');
+                showToast('驗證碼已產生！請輸入 6 位數驗證碼。', 'info');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = `<span>重新發送</span><i data-lucide="send" class="w-4 h-4"></i>`;
+            lucide.createIcons();
+            document.getElementById('otp-input').focus();
+        }
+
+        function verifyCode() {
+            const email = document.getElementById('user-email').value.trim();
+            const userOtp = document.getElementById('otp-input').value.trim();
+
+            if (!generatedOtp) {
+                showToast('請先點擊「發送驗證碼」！', 'error');
+                return;
+            }
+            if (userOtp !== generatedOtp) {
+                showToast('驗證碼不正確，請重新確認！', 'error');
+                return;
+            }
+
+            currentVerifiedEmail = email;
+            document.getElementById('verified-email-display').textContent = currentVerifiedEmail;
+            renderSurveyQuestions();
+            updateStepper(2);
+            showToast('電子信箱驗證成功！請開始填寫問卷。', 'success');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ==========================================
+        // 4. DYNAMIC SURVEY RENDERING & SUBMISSION
+        // ==========================================
+        function renderSurveyQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = surveyQuestions.map(q => {
+                const sectionHeader = q.section ? `
+                    <div class="pt-2 pb-1">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#06182c] text-cyan-300 text-xs font-bold tracking-wider shadow-sm">
+                            <i data-lucide="layers" class="w-3.5 h-3.5 text-amber-400"></i>
+                            ${q.section}
+                        </span>
+                    </div>
+                ` : '';
+
+                let inputHtml = '';
+                if (q.type === 'rating') {
+                    const labels = ['非常不滿意', '不滿意', '普通', '滿意', '非常滿意'];
+                    inputHtml = `
+                        <div class="grid grid-cols-5 gap-2 sm:gap-3 mt-4">
+                            ${[1, 2, 3, 4, 5].map(score => `
+                                <label class="cursor-pointer group">
+                                    <input type="radio" name="q_${q.id}" value="${score}" ${q.required ? 'required' : ''} class="peer sr-only">
+                                    <div class="p-2.5 sm:p-3.5 rounded-xl border-2 border-slate-200 bg-slate-50/60 text-center transition-all peer-checked:border-sky-600 peer-checked:bg-sky-50 peer-checked:shadow-sm group-hover:border-sky-300">
+                                        <div class="text-lg sm:text-xl font-extrabold text-slate-700 peer-checked:text-sky-700">${score}</div>
+                                        <div class="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-tight">${labels[score - 1]}</div>
+                                    </div>
+                                </label>
+                            `).join('')}
+                        </div>
+                    `;
+                } else if (q.type === 'choice' || q.type === 'choice_other') {
+                    inputHtml = `
+                        <div class="space-y-2.5 mt-3">
+                            ${(q.options || []).map(opt => `
+                                <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-sky-300 hover:bg-sky-50/40 cursor-pointer transition-all">
+                                    <input type="radio" name="q_${q.id}" value="${opt}" ${q.required ? 'required' : ''}
+                                        onchange="toggleOtherInput('${q.id}', false)"
+                                        class="w-4 h-4 text-sky-600 focus:ring-sky-500">
+                                    <span class="text-sm font-medium text-slate-800">${opt}</span>
+                                </label>
+                            `).join('')}
+                            ${q.type === 'choice_other' ? `
+                                <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-sky-300 hover:bg-sky-50/40 cursor-pointer transition-all">
+                                    <input type="radio" name="q_${q.id}" value="__OTHER__" ${q.required ? 'required' : ''}
+                                        onchange="toggleOtherInput('${q.id}', true)"
+                                        class="w-4 h-4 text-sky-600 focus:ring-sky-500">
+                                    <span class="text-sm font-medium text-slate-800 shrink-0">其他：</span>
+                                    <input type="text" id="other_text_${q.id}" placeholder="請註明您的身分"
+                                        onfocus="selectOtherRadio('${q.id}')"
+                                        class="flex-grow px-3 py-1.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 outline-none">
+                                </label>
+                            ` : ''}
+                        </div>
+                    `;
+                } else if (q.type === 'text') {
+                    inputHtml = `
+                        <textarea name="q_${q.id}" rows="3" ${q.required ? 'required' : ''}
+                            placeholder="${q.placeholder || '請輸入您的意見...'}"
+                            class="w-full mt-3 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none text-sm text-slate-800"></textarea>
+                    `;
+                }
+
+                return `
+                    ${sectionHeader}
+                    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200/90 hover:border-sky-200 transition-colors">
+                        <label class="block text-base font-bold text-slate-900">
+                            ${q.title} ${q.required ? '<span class="text-rose-500">*</span>' : ''}
+                        </label>
+                        ${inputHtml}
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function toggleOtherInput(qId, isOther) {
+            const otherInput = document.getElementById(`other_text_${qId}`);
+            if (otherInput && isOther) {
+                otherInput.focus();
+            }
+        }
+
+        function selectOtherRadio(qId) {
+            const radios = document.querySelectorAll(`input[name="q_${qId}"]`);
+            radios.forEach(r => {
+                if (r.value === '__OTHER__') r.checked = true;
+            });
+        }
+
+        async function submitSurvey(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const answers = {};
+
+            for (const q of surveyQuestions) {
+                let val = formData.get(`q_${q.id}`) || '';
+                if (q.type === 'choice_other' && val === '__OTHER__') {
+                    const otherVal = (document.getElementById(`other_text_${q.id}`)?.value || '').trim();
+                    if (!otherVal) {
+                        showToast(`請填寫「${q.title}」的其他說明欄位！`, 'error');
+                        document.getElementById(`other_text_${q.id}`)?.focus();
+                        return;
+                    }
+                    val = `其他：${otherVal}`;
+                }
+                answers[q.id] = val;
+            }
+
+            const timestamp = new Date().toLocaleString('zh-TW', { hour12: false });
+            currentResponseId = 'resp_' + Date.now();
+            const newRecord = {
+                id: currentResponseId,
+                email: currentVerifiedEmail,
+                timestamp: timestamp,
+                answers: answers,
+                prizeWon: null
+            };
+
+            responses.unshift(newRecord);
+            verifiedEmailsSet.add(currentVerifiedEmail.toLowerCase());
+            updateBadgeCount();
+
+            // Sync initial survey response to Google Sheets if GAS URL is set
+            if (GAS_WEB_APP_URL && GAS_WEB_APP_URL.startsWith('https://script.google.com/')) {
+                fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'saveResponse',
+                        email: currentVerifiedEmail,
+                        timestamp: timestamp,
+                        answers: answers,
+                        prizeWon: '尚未抽獎'
+                    })
+                }).catch(err => console.error('GAS saveResponse error:', err));
+            }
+
+            // Prepare Lottery Wheel
+            document.getElementById('lottery-action-area').classList.remove('hidden');
+            document.getElementById('lottery-result-card').classList.add('hidden');
+            document.getElementById('spin-btn').disabled = false;
+            renderLotteryWheel();
+            updateStepper(3);
+            showToast('問卷送出成功！請點擊轉盤進行抽獎。', 'success');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ==========================================
+        // 5. LOTTERY WHEEL RENDER & WEIGHTED DRAW
+        // ==========================================
+        function renderLotteryWheel() {
+            const svg = document.getElementById('wheel-svg');
+            if (!svg) return;
+
+            const activePrizes = lotteryPrizes.filter(p => Number(p.quantity) > 0);
+            const items = activePrizes.length > 0 ? activePrizes : lotteryPrizes;
+            const total = items.length;
+            const sliceAngle = 360 / total;
+
+            let svgContent = '';
+            items.forEach((prize, idx) => {
+                const startAngle = idx * sliceAngle;
+                const endAngle = startAngle + sliceAngle;
+                const startRad = (startAngle * Math.PI) / 180;
+                const endRad = (endAngle * Math.PI) / 180;
+
+                const x1 = 100 + 100 * Math.cos(startRad);
+                const y1 = 100 + 100 * Math.sin(startRad);
+                const x2 = 100 + 100 * Math.cos(endRad);
+                const y2 = 100 + 100 * Math.sin(endRad);
+                const largeArc = sliceAngle > 180 ? 1 : 0;
+
+                const pathData = `M 100 100 L ${x1} ${y1} A 100 100 0 ${largeArc} 1 ${x2} ${y2} Z`;
+                const midAngle = startAngle + sliceAngle / 2;
+                const midRad = (midAngle * Math.PI) / 180;
+                const textX = 100 + 62 * Math.cos(midRad);
+                const textY = 100 + 62 * Math.sin(midRad);
+
+                svgContent += `
+                    <path d="${pathData}" fill="${prize.color}" stroke="#ffffff" stroke-width="1.5"></path>
+                    <text x="${textX}" y="${textY}" fill="#ffffff" font-size="9" font-weight="bold"
+                        text-anchor="middle" dominant-baseline="middle"
+                        transform="rotate(${midAngle}, ${textX}, ${textY})">
+                        ${prize.name}
+                    </text>
+                `;
+            });
+            svg.innerHTML = svgContent;
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+
+            const availablePrizes = lotteryPrizes.filter(p => Number(p.quantity) > 0);
+            if (availablePrizes.length === 0) {
+                showToast('所有獎品皆已全數抽完，感謝您的參與！', 'info');
+                return;
+            }
+
+            isSpinning = true;
+            const spinBtn = document.getElementById('spin-btn');
+            spinBtn.disabled = true;
+
+            // Weighted random selection among prizes with remaining stock
+            const totalWeight = availablePrizes.reduce((sum, p) => sum + Number(p.probability || 1), 0);
+            let randomVal = Math.random() * totalWeight;
+            let selectedPrize = availablePrizes[0];
+
+            for (const p of availablePrizes) {
+                randomVal -= Number(p.probability || 1);
+                if (randomVal <= 0) {
+                    selectedPrize = p;
+                    break;
+                }
+            }
+
+            // Deduct prize quantity
+            selectedPrize.quantity = Math.max(0, Number(selectedPrize.quantity) - 1);
+
+            // Calculate rotation angle to land on selectedPrize slice
+            const items = availablePrizes;
+            const targetIdx = items.findIndex(p => p.id === selectedPrize.id);
+            const sliceAngle = 360 / items.length;
+            const targetCenterAngle = targetIdx * sliceAngle + sliceAngle / 2;
+            const extraSpins = 360 * 6;
+            const finalTargetRotation = extraSpins + (360 - targetCenterAngle);
+            currentWheelRotation += finalTargetRotation - (currentWheelRotation % 360);
+
+            const spinnerEl = document.getElementById('wheel-spinner');
+            spinnerEl.style.transform = `rotate(${currentWheelRotation}deg)`;
+
+            setTimeout(async () => {
+                isSpinning = false;
+
+                // Record won prize on response
+                const rec = responses.find(r => r.id === currentResponseId);
+                if (rec) {
+                    rec.prizeWon = selectedPrize.name;
+                }
+
+                document.getElementById('lottery-action-area').classList.add('hidden');
+                document.getElementById('prize-result-title').textContent = `恭喜獲得：${selectedPrize.name}`;
+                document.getElementById('lottery-result-card').classList.remove('hidden');
+
+                // Sync won prize to Google Sheets
+                if (GAS_WEB_APP_URL && GAS_WEB_APP_URL.startsWith('https://script.google.com/') && rec) {
+                    try {
+                        const res = await fetch(GAS_WEB_APP_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify({
+                                action: 'saveResponse',
+                                email: rec.email,
+                                timestamp: rec.timestamp,
+                                answers: rec.answers,
+                                prizeWon: selectedPrize.name
+                            })
+                        });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                            showToast('抽獎結果已同步寫入 Google 試算表！', 'success');
+                        }
+                    } catch (err) {
+                        console.error('GAS lottery sync error:', err);
+                    }
+                }
+            }, 4100);
+        }
+
+        function resetForNewUser() {
+            currentVerifiedEmail = '';
+            generatedOtp = '';
+            currentResponseId = null;
+            document.getElementById('user-email').value = '';
+            document.getElementById('otp-input').value = '';
+            document.getElementById('demo-otp-box').classList.add('hidden');
+            document.getElementById('real-otp-sent-box').classList.add('hidden');
+            document.getElementById('otp-input-section').classList.add('hidden');
+            document.getElementById('survey-form').reset();
+            updateStepper(1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ==========================================
+        // 6. ADMIN DASHBOARD STATS & PRIZE SETTINGS
+        // ==========================================
+        function updateBadgeCount() {
+            document.getElementById('response-count-badge').textContent = responses.length;
+        }
+
+        function updateDashboardStats() {
+            updateBadgeCount();
+            const total = responses.length;
+            document.getElementById('stat-total-responses').textContent = total;
+
+            const ratingQuestions = surveyQuestions.filter(q => q.type === 'rating');
+            let totalScoreSum = 0;
+            let totalScoreCount = 0;
+            let positiveCount = 0;
+
+            responses.forEach(r => {
+                ratingQuestions.forEach(q => {
+                    const val = Number(r.answers[q.id]);
+                    if (val >= 1 && val <= 5) {
+                        totalScoreSum += val;
+                        totalScoreCount++;
+                        if (val >= 4) positiveCount++;
+                    }
+                });
+            });
+
+            const avgScore = totalScoreCount > 0 ? (totalScoreSum / totalScoreCount).toFixed(2) : '0.0';
+            const posRate = totalScoreCount > 0 ? Math.round((positiveCount / totalScoreCount) * 100) : 0;
+
+            document.getElementById('stat-avg-score').textContent = avgScore;
+            document.getElementById('stat-satisfaction-rate').textContent = `正面評價佔比（4~5分）：${posRate}%`;
+
+            const prizesWonCount = responses.filter(r => r.prizeWon).length;
+            const remainingStock = lotteryPrizes.reduce((sum, p) => sum + Number(p.quantity || 0), 0);
+            document.getElementById('stat-prizes-won').textContent = prizesWonCount;
+            document.getElementById('stat-prizes-remaining').textContent = `目前剩餘總庫存：${remainingStock} 份`;
+
+            renderQuestionCharts();
+            renderResponsesTable();
+        }
+
+        function renderQuestionCharts() {
+            const container = document.getElementById('charts-container');
+            const ratingQuestions = surveyQuestions.filter(q => q.type === 'rating');
+
+            if (responses.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-6 text-sm text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">尚無填答數據可繪製統計圖表</div>`;
+                return;
+            }
+
+            container.innerHTML = ratingQuestions.map(q => {
+                let sum = 0, cnt = 0;
+                responses.forEach(r => {
+                    const v = Number(r.answers[q.id]);
+                    if (v) { sum += v; cnt++; }
+                });
+                const avg = cnt > 0 ? (sum / cnt).toFixed(2) : 0;
+                const pct = Math.round((avg / 5) * 100);
+
+                return `
+                    <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 space-y-2">
+                        <div class="flex justify-between items-start gap-2">
+                            <p class="text-xs font-bold text-slate-800 leading-snug">${q.title}</p>
+                            <span class="text-xs font-extrabold text-sky-700 bg-sky-100 px-2 py-0.5 rounded shrink-0">${avg} 分</span>
+                        </div>
+                        <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderPrizeSettingsTable() {
+            const tbody = document.getElementById('prize-settings-tbody');
+            tbody.innerHTML = lotteryPrizes.map((p, idx) => `
+                <tr>
+                    <td class="py-2.5 px-2">
+                        <input type="text" value="${p.name}" onchange="updatePrizeField(${idx}, 'name', this.value)"
+                            class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-medium">
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="number" min="0" value="${p.quantity}" onchange="updatePrizeField(${idx}, 'quantity', Number(this.value))"
+                            class="w-24 px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-mono">
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="number" step="0.01" min="0" max="100" value="${p.probability}" onchange="updatePrizeField(${idx}, 'probability', Number(this.value))"
+                            class="w-24 px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-mono">
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="color" value="${p.color}" onchange="updatePrizeField(${idx}, 'color', this.value)"
+                            class="w-10 h-8 rounded cursor-pointer border border-slate-200">
+                    </td>
+                    <td class="py-2.5 px-2 text-right">
+                        <button type="button" onclick="removePrizeRow(${idx})" class="text-rose-500 hover:text-rose-700 p-1">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            updateTotalProbDisplay();
+            lucide.createIcons();
+        }
+
+        function updatePrizeField(index, field, value) {
+            if (lotteryPrizes[index]) {
+                lotteryPrizes[index][field] = value;
+                updateTotalProbDisplay();
+            }
+        }
+
+        function updateTotalProbDisplay() {
+            const sum = lotteryPrizes.reduce((acc, p) => acc + Number(p.probability || 0), 0);
+            const display = document.getElementById('total-prob-display');
+            display.textContent = `目前總機率：${sum.toFixed(2)}%`;
+            display.className = Math.abs(sum - 100) < 0.05 ? 'text-xs font-bold text-emerald-600' : 'text-xs font-bold text-rose-600';
+        }
+
+        function addPrizeRow() {
+            lotteryPrizes.push({
+                id: 'p_' + Date.now(),
+                name: '新增紀念品',
+                quantity: 10,
+                probability: 0,
+                color: '#6366f1'
+            });
+            renderPrizeSettingsTable();
+        }
+
+        function removePrizeRow(index) {
+            if (lotteryPrizes.length <= 1) {
+                showToast('至少須保留一個抽獎獎項！', 'error');
+                return;
+            }
+            lotteryPrizes.splice(index, 1);
+            renderPrizeSettingsTable();
+        }
+
+        function savePrizeSettings() {
+            renderLotteryWheel();
+            updateDashboardStats();
+            showToast('抽獎獎品與機率設定已更新並套用至轉盤！', 'success');
+        }
+
+        function saveGasSettings() {
+            const url = document.getElementById('gas-url-input').value.trim();
+            const badge = document.getElementById('gas-status-badge');
+
+            if (!url) {
+                GAS_WEB_APP_URL = '';
+                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 self-start';
+                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> 目前為本機模擬模式`;
+                showToast('已清除 GAS 網址，切換回本機模擬模式。', 'info');
+                return;
+            }
+
+            if (!url.startsWith('https://script.google.com/')) {
+                showToast('請輸入正確的 Google Apps Script 網址（https://script.google.com/...）', 'error');
+                return;
+            }
+
+            GAS_WEB_APP_URL = url;
+            badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 self-start';
+            badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> 已啟用 Google 真實寄信與同步`;
+            showToast('Google Apps Script 連線已啟用！', 'success');
+        }
+
+        function renderResponsesTable() {
+            const tbody = document.getElementById('responses-tbody');
+            if (!tbody) return;
+
+            if (responses.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-400">尚無填答紀錄，請先填寫問卷或點擊上方「匯入模擬填答數據」。</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            const ratingQuestions = surveyQuestions.filter(q => q.type === 'rating');
+            tbody.innerHTML = responses.map(r => {
+                let sum = 0, cnt = 0;
+                ratingQuestions.forEach(q => {
+                    const v = Number(r.answers[q.id]);
+                    if (v) { sum += v; cnt++; }
+                });
+                const avg = cnt > 0 ? (sum / cnt).toFixed(1) : '-';
+                const demoInfo = `${r.answers.gender || '-'} / ${r.answers.identity || '-'}`;
+                const comment = r.answers.q10 || '<span class="text-slate-300">無</span>';
+
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="py-3 px-3 font-medium text-slate-800">${r.email}</td>
+                        <td class="py-3 px-3 text-slate-600">${demoInfo}</td>
+                        <td class="py-3 px-3 text-xs text-slate-500">${r.timestamp}</td>
+                        <td class="py-3 px-3 font-bold text-sky-700">${avg} 分</td>
+                        <td class="py-3 px-3">
+                            ${r.prizeWon ? `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">${r.prizeWon}</span>` : '<span class="text-xs text-slate-400">尚未抽獎</span>'}
+                        </td>
+                        <td class="py-3 px-3 text-slate-600 max-w-xs truncate" title="${r.answers.q10 || ''}">${comment}</td>
+                        <td class="py-3 px-3 text-right">
+                            <button type="button" onclick="requestDeleteResponse('${r.id}')" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 hover:border-rose-600 transition-all" title="刪除此筆紀錄">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                <span>刪除</span>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        let pendingDeleteResponseId = null;
+
+        function requestDeleteResponse(responseId) {
+            const target = responses.find(r => r.id === responseId);
+            if (!target) return;
+
+            pendingDeleteResponseId = responseId;
+            const descEl = document.getElementById('delete-confirm-desc');
+            if (target.prizeWon) {
+                descEl.innerHTML = `確定要刪除 <strong>${target.email}</strong> 的填答紀錄嗎？<br><span class="text-amber-700 font-semibold mt-1 inline-block">※ 系統將同步把「${target.prizeWon}」剩餘庫存數量 +1 回補。</span>`;
+            } else {
+                descEl.innerHTML = `確定要刪除 <strong>${target.email}</strong> 的填答紀錄嗎？刪除後將釋出該信箱的填答資格。`;
+            }
+
+            document.getElementById('delete-confirm-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeDeleteConfirmModal() {
+            pendingDeleteResponseId = null;
+            document.getElementById('delete-confirm-modal').classList.add('hidden');
+        }
+
+        async function confirmDeleteResponse() {
+            if (!pendingDeleteResponseId) return;
+
+            const idx = responses.findIndex(r => r.id === pendingDeleteResponseId);
+            if (idx === -1) {
+                closeDeleteConfirmModal();
+                return;
+            }
+
+            const target = responses[idx];
+            const deletedEmail = target.email;
+            const wonPrizeName = target.prizeWon;
+
+            // 1. 回補抽獎獎品庫存數量 (+1)
+            let restoredPrizeMsg = '';
+            if (wonPrizeName) {
+                const prizeObj = lotteryPrizes.find(p => p.name === wonPrizeName);
+                if (prizeObj) {
+                    prizeObj.quantity = Number(prizeObj.quantity || 0) + 1;
+                    restoredPrizeMsg = `，並已自動回補「${wonPrizeName}」庫存 +1`;
+                }
+            }
+
+            // 2. 移除該筆填答紀錄並解除信箱重複限制
+            responses.splice(idx, 1);
+            if (deletedEmail) {
+                verifiedEmailsSet.delete(deletedEmail.toLowerCase().trim());
+            }
+
+            closeDeleteConfirmModal();
+            renderLotteryWheel();
+            updateDashboardStats();
+            showToast(`已刪除 ${deletedEmail} 的紀錄${restoredPrizeMsg}！`, 'success');
+
+            // 3. 若有串接 Google Apps Script，同步從試算表刪除該列資料
+            if (GAS_WEB_APP_URL && GAS_WEB_APP_URL.startsWith('https://script.google.com/')) {
+                try {
+                    const res = await fetch(GAS_WEB_APP_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({
+                            action: 'deleteResponse',
+                            email: deletedEmail
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.status === 'success' && data.deleted) {
+                        showToast('Google 試算表中的對應資料列也已同步移除！', 'info');
+                    }
+                } catch (err) {
+                    console.error('GAS deleteResponse error:', err);
+                }
+            }
+        }
+
+        function copyGasScriptCode() {
+            const gasCode = `function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheets()[0];
+
+    // 自動建立標題列（若試算表為空）
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow([
+        '填答時間', '驗證信箱', '生理性別', '身分',
+        'Q1_主題內容', 'Q2_符合需求', 'Q3_助益程度', 'Q4_場地舒適',
+        'Q5_時間適切', 'Q6_提升表達', 'Q7_再參與意願', 'Q8_整體規劃',
+        'Q9_行政服務', 'Q10_其他意見', '抽中獎項'
+      ]);
+    }
+
+    // 動作 1：寄送 6 位數驗證碼信件
+    if (data.action === 'sendOtp') {
+      var subject = '【全國高中職專題競賽】滿意度問卷電子信箱驗證碼';
+      var body = '您好！\\n\\n感謝您參與全國高中職專題競賽活動。\\n您的問卷信箱驗證碼為：' + data.otp + '\\n\\n請返回問卷頁面輸入此 6 位數驗證碼以繼續填寫問卷並參加抽獎。';
+      MailApp.sendEmail(data.email, subject, body);
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 動作 2：寫入或更新問卷與抽獎資料
+    if (data.action === 'saveResponse') {
+      var email = String(data.email || '').toLowerCase().trim();
+      var ans = data.answers || {};
+      var prize = data.prizeWon || '尚未抽獎';
+      var rows = sheet.getDataRange().getValues();
+
+      // 若該信箱已存在（例如剛送出問卷，現在抽完獎要更新獎項），直接更新該列
+      for (var i = 1; i < rows.length; i++) {
+        if (String(rows[i][1]).toLowerCase().trim() === email) {
+          sheet.getRange(i + 1, 15).setValue(prize);
+          return ContentService.createTextOutput(JSON.stringify({ status: 'success', updated: true }))
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+
+      // 新增一筆完整紀錄
+      var rowValues = [
+        data.timestamp || new Date().toLocaleString('zh-TW'),
+        data.email,
+        ans.gender || '',
+        ans.identity || '',
+        ans.q1 || '',
+        ans.q2 || '',
+        ans.q3 || '',
+        ans.q4 || '',
+        ans.q5 || '',
+        ans.q6 || '',
+        ans.q7 || '',
+        ans.q8 || '',
+        ans.q9 || '',
+        ans.q10 || '',
+        prize
+      ];
+      sheet.appendRow(rowValues);
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success', appended: true }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 動作 3：管理者刪除特定信箱的問卷與抽獎紀錄
+    if (data.action === 'deleteResponse') {
+      var targetEmail = String(data.email || '').toLowerCase().trim();
+      var allRows = sheet.getDataRange().getValues();
+      for (var d = allRows.length - 1; d >= 1; d--) {
+        if (String(allRows[d][1]).toLowerCase().trim() === targetEmail) {
+          sheet.deleteRow(d + 1);
+          return ContentService.createTextOutput(JSON.stringify({ status: 'success', deleted: true }))
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success', deleted: false }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}`;
+            const textarea = document.createElement('textarea');
+            textarea.value = gasCode;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('已複製 Google Apps Script 後端程式碼！', 'success');
+        }
+        // ==========================================
+        // 5. MOCK DATA & AI REPORT GENERATOR
+        // ==========================================
+        // 7. MOCK DATA & AI REPORT GENERATOR
+        // ==========================================
+        function loadMockResponses() {
+            const mockSamples = [
+                {
+                    email: 'student01@school.edu.tw',
+                    answers: { gender: '男', identity: '學生', q1: '5', q2: '5', q3: '5', q4: '4', q5: '5', q6: '5', q7: '5', q8: '5', q9: '5', q10: '評審老師給的專題建議非常受用，收穫滿滿！' },
+                    prizeWon: '資料夾'
+                },
+                {
+                    email: 'teacher.lin@school.edu.tw',
+                    answers: { gender: '女', identity: '教師', q1: '5', q2: '5', q3: '5', q4: '5', q5: '4', q6: '5', q7: '5', q8: '5', q9: '5', q10: '動線規劃清晰，工作人員引導十分親切。' },
+                    prizeWon: '不織布袋'
+                },
+                {
+                    email: 'team.alpha@gmail.com',
+                    answers: { gender: '男', identity: '學生', q1: '4', q2: '4', q3: '5', q4: '4', q5: '4', q6: '5', q7: '5', q8: '4', q9: '5', q10: '希望下次午餐休息時間可以再多 15 分鐘。' },
+                    prizeWon: '徽章'
+                },
+                {
+                    email: 'chen.yu@school.edu.tw',
+                    answers: { gender: '女', identity: '學生', q1: '5', q2: '4', q3: '5', q4: '5', q5: '5', q6: '4', q7: '5', q8: '5', q9: '5', q10: '看到很多優秀作品，激發了我對資訊專題的熱情！' },
+                    prizeWon: '原子筆'
+                },
+                {
+                    email: 'guest.wang@contest.org',
+                    answers: { gender: '男', identity: '其他：業界評審', q1: '5', q2: '5', q3: '5', q4: '5', q5: '5', q6: '5', q7: '5', q8: '5', q9: '5', q10: '學生台風穩健，整體活動組織極具水準。' },
+                    prizeWon: '識別證套'
+                }
+            ];
+
+            mockSamples.forEach((sample, idx) => {
+                if (!verifiedEmailsSet.has(sample.email)) {
+                    responses.push({
+                        id: 'mock_' + Date.now() + '_' + idx,
+                        email: sample.email,
+                        timestamp: new Date(Date.now() - idx * 300000).toLocaleString('zh-TW', { hour12: false }),
+                        answers: sample.answers,
+                        prizeWon: sample.prizeWon
+                    });
+                    verifiedEmailsSet.add(sample.email);
+                }
+            });
+
+            updateDashboardStats();
+            showToast('已匯入 5 筆模擬競賽填答與抽獎數據！', 'success');
+        }
+
+        async function generateSatisfactionReport() {
+            if (responses.length === 0) {
+                showToast('目前尚無填答數據，請先填寫問卷或匯入模擬數據！', 'error');
+                return;
+            }
+
+            const placeholder = document.getElementById('report-placeholder');
+            const loading = document.getElementById('report-loading');
+            const content = document.getElementById('report-content');
+            const copyBtn = document.getElementById('copy-report-btn');
+
+            placeholder.classList.add('hidden');
+            content.classList.add('hidden');
+            loading.classList.remove('hidden');
+
+            // Compute quantitative statistics
+            const total = responses.length;
+            const maleCount = responses.filter(r => r.answers.gender === '男').length;
+            const femaleCount = responses.filter(r => r.answers.gender === '女').length;
+            const studentCount = responses.filter(r => r.answers.identity === '學生').length;
+            const teacherCount = responses.filter(r => r.answers.identity === '教師').length;
+            const otherIdCount = total - studentCount - teacherCount;
+
+            const ratingQuestions = surveyQuestions.filter(q => q.type === 'rating');
+            const qStats = ratingQuestions.map(q => {
+                let sum = 0, cnt = 0;
+                responses.forEach(r => {
+                    const v = Number(r.answers[q.id]);
+                    if (v) { sum += v; cnt++; }
+                });
+                return {
+                    title: q.title,
+                    avg: cnt > 0 ? Number((sum / cnt).toFixed(2)) : 0
+                };
+            });
+
+            const sortedStats = [...qStats].sort((a, b) => b.avg - a.avg);
+            const highestQ = sortedStats[0];
+            const lowestQ = sortedStats[sortedStats.length - 1];
+            const overallAvg = (qStats.reduce((s, x) => s + x.avg, 0) / qStats.length).toFixed(2);
+            const comments = responses.map(r => r.answers.q10).filter(c => c && c.trim().length > 0);
+
+            // Try Gemini API for enhanced narrative synthesis, fallback to local analytical report builder
+            let reportHtml = '';
+            try {
+                const promptText = `你是一位專業的活動成效評估顧問。請根據以下「全國高中職專題競賽」滿意度調查數據，撰寫一份正式、結構清晰的繁體中文《活動滿意度調查分析報告》（使用 HTML 標籤 <h2>, <h3>, <p>, <ul>, <li>, <strong> 排版，不要使用 markdown 符號）：
+                - 有效樣本數：${total} 份
+                - 性別分布：男性 ${maleCount} 人 (${Math.round(maleCount/total*100)}%)、女性 ${femaleCount} 人 (${Math.round(femaleCount/total*100)}%)
+                - 身分分布：學生 ${studentCount} 人、教師 ${teacherCount} 人、其他 ${otherIdCount} 人
+                - 整體總平均滿意度：${overallAvg} / 5.00 分
+                - 各題平均分數：${qStats.map(q => `${q.title}: ${q.avg}分`).join('；')}
+                - 填答者文字建議：${comments.length > 0 ? comments.join(' / ') : '無文字建議'}`;
+
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptText }] }]
+                    })
+                });
+                const result = await res.json();
+                const aiText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (aiText) {
+                    reportHtml = aiText.replace(/```html|```/g, '').trim();
+                } else {
+                    throw new Error('Fallback to local report');
+                }
+            } catch (err) {
+                reportHtml = `
+                    <h2>全國高中職專題競賽 — 滿意度調查綜合分析報告</h2>
+                    <h3>一、受訪者基本資料結構</h3>
+                    <p>本次問卷共回收 <strong>${total} 份</strong> 經過電子信箱驗證之有效樣本。在生理性別分布上，男性佔 <strong>${Math.round(maleCount/total*100)}%</strong>（${maleCount} 人），女性佔 <strong>${Math.round(femaleCount/total*100)}%</strong>（${femaleCount} 人）；在參與身分方面，以<strong>學生族群（${studentCount} 人）</strong>為主體，其次為<strong>指導教師（${teacherCount} 人）</strong>及其他與會貴賓（${otherIdCount} 人）。</p>
+                    <h3>二、整體滿意度量化表現</h3>
+                    <p>本次活動九大滿意度指標之整體總平均高達 <strong>${overallAvg} 分（滿分 5.00 分）</strong>，顯示與會師生對競賽辦理成效給予高度肯定。</p>
+                    <ul>
+                        <li><strong>最高評價指標：</strong>「${highestQ.title}」獲得最高平均 <strong>${highestQ.avg} 分</strong>，展現活動規劃與執行深獲認可。</li>
+                        <li><strong>持續精進指標：</strong>「${lowestQ.title}」平均為 <strong>${lowestQ.avg} 分</strong>（仍維持高水準表現），可作為下屆賽程微調之優先參考。</li>
+                    </ul>
+                    <h3>三、質化意見彙整與未來建議</h3>
+                    ${comments.length > 0
+                        ? `<ul>${comments.map(c => `<li>${c}</li>`).join('')}</ul>`
+                        : `<p>本次受訪者對活動整體流程均表滿意，暫無額外負面建議。</p>`}
+                    <p><strong>總結建議：</strong>建議延續本屆優良之行政支援與評審回饋機制，並依據與會者針對時程細節之回饋適度彈性調整，持續提升全國高中職專題競賽品牌影響力。</p>
+                `;
+            }
+
+            loading.classList.add('hidden');
+            content.innerHTML = reportHtml;
+            content.classList.remove('hidden');
+            copyBtn.classList.remove('hidden');
+            showToast('滿意度分析報告已自動生成！', 'success');
+        }
+
+        function copyReportText() {
+            const content = document.getElementById('report-content');
+            const textarea = document.createElement('textarea');
+            textarea.value = content.innerText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('已複製分析報告純文字內容！', 'success');
+        }
+
+        // ==========================================
+        // 8. QUESTION EDITOR MODAL
+        // ==========================================
+        function openQuestionEditorModal() {
+            renderModalQuestions();
+            document.getElementById('question-editor-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeQuestionEditorModal() {
+            document.getElementById('question-editor-modal').classList.add('hidden');
+        }
+
+        function renderModalQuestions() {
+            const list = document.getElementById('modal-questions-list');
+            list.innerHTML = surveyQuestions.map((q, idx) => `
+                <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-xs font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800">第 ${idx + 1} 題 (${q.type === 'rating' ? '1-5評分' : q.type === 'text' ? '簡答題' : '單選題'})</span>
+                        <button type="button" onclick="deleteQuestionInModal(${idx})" class="text-xs text-rose-600 hover:underline font-medium">刪除此題</button>
+                    </div>
+                    <input type="text" id="modal_q_title_${idx}" value="${q.title}" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-semibold">
+                    ${(q.type === 'choice' || q.type === 'choice_other') ? `
+                        <div>
+                            <label class="text-xs text-slate-500">選項（請用逗號分隔）：</label>
+                            <input type="text" id="modal_q_opts_${idx}" value="${(q.options || []).join(', ')}" class="w-full mt-1 px-3 py-1.5 rounded-lg border border-slate-300 text-xs">
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function addNewQuestion(type) {
+            const newId = 'custom_' + Date.now();
+            surveyQuestions.push({
+                id: newId,
+                title: `${surveyQuestions.length + 1}. 新增問卷題目`,
+                type: type,
+                required: type !== 'text',
+                options: type === 'choice' ? ['選項一', '選項二', '選項三'] : undefined
+            });
+            renderModalQuestions();
+        }
+
+        function deleteQuestionInModal(idx) {
+            if (surveyQuestions.length <= 1) {
+                showToast('問卷至少須保留一題！', 'error');
+                return;
+            }
+            surveyQuestions.splice(idx, 1);
+            renderModalQuestions();
+        }
+
+        function saveQuestionsFromModal() {
+            surveyQuestions.forEach((q, idx) => {
+                const titleInput = document.getElementById(`modal_q_title_${idx}`);
+                if (titleInput && titleInput.value.trim()) {
+                    q.title = titleInput.value.trim();
+                }
+                const optsInput = document.getElementById(`modal_q_opts_${idx}`);
+                if (optsInput) {
+                    q.options = optsInput.value.split(',').map(s => s.trim()).filter(Boolean);
+                }
+            });
+            closeQuestionEditorModal();
+            renderSurveyQuestions();
+            showToast('問卷題目結構已更新！', 'success');
+        }
+
+        // ==========================================
+        // 9. TOAST NOTIFICATION & INITIALIZATION
+        // ==========================================
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const styles = {
+                success: 'bg-emerald-900/95 text-white border-emerald-500',
+                error: 'bg-rose-900/95 text-white border-rose-500',
+                info: 'bg-slate-900/95 text-white border-cyan-500'
+            };
+            const icons = {
+                success: 'check-circle-2',
+                error: 'alert-circle',
+                info: 'info'
+            };
+
+            toast.className = `${styles[type] || styles.info} border-l-4 px-4 py-3 rounded-xl shadow-xl backdrop-blur-md flex items-center gap-3 text-sm font-medium pointer-events-auto transition-all duration-300`;
+            toast.innerHTML = `
+                <i data-lucide="${icons[type] || 'info'}" class="w-5 h-5 shrink-0"></i>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(8px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        window.onload = function () {
+            renderSurveyQuestions();
+            renderLotteryWheel();
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>
