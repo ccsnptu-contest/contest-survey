@@ -69,7 +69,7 @@
                         <h1 class="font-bold text-base sm:text-lg text-white leading-tight tracking-wide">專題競賽活動滿意度調查</h1>
                         <span class="hidden md:inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">2026 CONTEST</span>
                     </div>
-                    <p class="text-xs text-cyan-200/80 hidden sm:block">問卷回饋 • 信箱驗證 • 幸運轉盤 • AI 數據洞察</p>
+                    <p class="text-xs text-cyan-200/80 hidden sm:block">問卷回饋 • 信箱驗證 • 幸運轉盤 </p>
                 </div>
             </div>
 
@@ -95,7 +95,7 @@
                 <div class="space-y-2.5">
                     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-400/15 border border-cyan-300/30 text-cyan-200 text-xs font-semibold tracking-wider">
                         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                        <span>NATIONAL PROJECT CONTEST • 活動意見回饋與抽獎專區</span>
+                        <span>NPTU • COLLEGE OF COMPUTER SCIENCE</span>
                     </div>
                     <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white drop-shadow-sm">
                         全國高中職專題競賽 <span class="text-cyan-300">滿意度調查</span>
@@ -486,16 +486,16 @@
                         </h3>
                         <p class="text-xs text-slate-500 mt-1">貼上您部署的 GAS 網頁應用程式網址（Web App URL），即可啟用真實寄發驗證碼並自動將問卷與中獎紀錄寫入 Google 試算表。</p>
                     </div>
-                    <span id="gas-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 self-start">
-                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                        目前為本機模擬模式
+                    <span id="gas-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 self-start">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        已啟用 Google 真實寄信與同步
                     </span>
                 </div>
 
                 <div class="space-y-3">
                     <label for="gas-url-input" class="block text-sm font-semibold text-slate-700">Google Apps Script 網頁應用程式網址 (Exec URL)</label>
                     <div class="flex flex-col sm:flex-row gap-2">
-                        <input type="url" id="gas-url-input" placeholder="https://script.google.com/macros/s/AKfycb.../exec"
+                        <input type="url" id="gas-url-input" value="https://script.google.com/macros/s/AKfycbxcrS0mjR4Sr3IRlxiFa99392KKBDOBBXilQIFqthVEAuERv4RhnMz3zPjv9jzzcemLyw/exec" placeholder="https://script.google.com/macros/s/AKfycb.../exec"
                             class="flex-grow px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none text-sm font-mono">
                         <button type="button" onclick="saveGasSettings()" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-xl text-sm shadow-sm transition-all whitespace-nowrap">
                             儲存並啟用連線
@@ -549,8 +549,8 @@
                     <i data-lucide="cpu" class="w-4 h-4"></i>
                 </div>
                 <div>
-                    <p class="font-semibold text-white">全國高中職專題競賽 — 活動滿意度調查與抽獎系統</p>
-                    <p class="text-slate-400 mt-0.5">© 2026 National Project Contest. All Rights Reserved.</p>
+                    <p class="font-semibold text-white">全國高中職專題競賽 — 活動滿意度調查</p>
+                    <p class="text-slate-400 mt-0.5">© 2026 NPTU CCS. All Rights Reserved.</p>
                 </div>
             </div>
             <div class="text-slate-400 flex items-center gap-4">
@@ -680,8 +680,8 @@
         let isAdminAuthenticated = false;
         let pendingAdminAction = null;
 
-        // Google Apps Script Web App URL (Leave empty to run in local simulation mode until configured in Admin panel)
-        let GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxJWzLC5Ir17SPv6NcHmvG7fck5rvEyWkX_82rdoO1byrY827nUW9UQiNe06cBUHMoQpA/exec';
+        // Google Apps Script Web App URL
+        let GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxcrS0mjR4Sr3IRlxiFa99392KKBDOBBXilQIFqthVEAuERv4RhnMz3zPjv9jzzcemLyw/exec';
 
         let surveyQuestions = [
             {
