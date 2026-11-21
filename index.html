@@ -69,7 +69,7 @@
                         <h1 class="font-bold text-base sm:text-lg text-white leading-tight tracking-wide">專題競賽活動滿意度調查</h1>
                         <span class="hidden md:inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">2026 CONTEST</span>
                     </div>
-                    <p class="text-xs text-cyan-200/80 hidden sm:block">問卷回饋 • 信箱驗證 • 幸運轉盤 </p>
+                    <p class="text-xs text-cyan-200/80 hidden sm:block">問卷回饋 • 信箱驗證 • 幸運轉盤</p>
                 </div>
             </div>
 
@@ -311,15 +311,6 @@
                         <p class="text-sm font-semibold text-sky-700 uppercase tracking-wider">抽獎結果出爐</p>
                         <h3 id="prize-result-title" class="text-2xl font-extrabold text-slate-900">恭喜獲得：頭獎</h3>
                         <p id="prize-result-desc" class="text-sm text-slate-600">請憑此畫面至大會服務台領取紀念品。</p>
-                        <div class="pt-4 flex flex-wrap justify-center gap-3">
-                            <button onclick="resetForNewUser()" class="px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium rounded-xl text-sm transition-all">
-                                模擬下一位填答者
-                            </button>
-                            <button onclick="switchView('admin')" class="px-5 py-2.5 bg-sky-700 hover:bg-sky-800 text-white font-medium rounded-xl text-sm shadow-sm transition-all flex items-center gap-1.5">
-                                <i data-lucide="file-text" class="w-4 h-4"></i>
-                                查看滿意度分析報告
-                            </button>
-                        </div>
                     </div>
                 </div>
             </section>
@@ -342,13 +333,17 @@
                     <p class="text-sm text-slate-500 mt-0.5">即時統計滿意度指標、自動生成文字洞察報告，並可自訂抽獎參數。</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
+                    <button id="sync-sheet-btn" onclick="syncFromGoogleSheet(true)" class="px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 font-medium rounded-xl text-xs sm:text-sm transition-all flex items-center gap-1.5">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        <span>從試算表同步資料</span>
+                    </button>
                     <button onclick="loadMockResponses()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs sm:text-sm transition-all flex items-center gap-1.5">
                         <i data-lucide="database" class="w-4 h-4 text-indigo-600"></i>
-                        匯入模擬填答數據
+                        <span>匯入模擬填答數據</span>
                     </button>
                     <button onclick="logoutAdmin()" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-medium rounded-xl text-xs sm:text-sm transition-all flex items-center gap-1.5">
                         <i data-lucide="log-out" class="w-4 h-4"></i>
-                        登出管理後台
+                        <span>登出管理後台</span>
                     </button>
                 </div>
             </div>
@@ -543,23 +538,9 @@
 
     <!-- Contest Footer -->
     <footer class="bg-[#06182c] text-slate-300 border-t border-cyan-500/20 mt-12">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-            <div class="flex items-center gap-2.5">
-                <div class="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 flex items-center justify-center">
-                    <i data-lucide="cpu" class="w-4 h-4"></i>
-                </div>
-                <div>
-                    <p class="font-semibold text-white">全國高中職專題競賽 — 活動滿意度調查</p>
-                    <p class="text-slate-400 mt-0.5">© 2026 NPTU CCS. All Rights Reserved.</p>
-                </div>
-            </div>
-            <div class="text-slate-400 flex items-center gap-4">
-                <span>信箱驗證防護</span>
-                <span>•</span>
-                <span>即時庫存控管</span>
-                <span>•</span>
-                <span>自動報告彙整</span>
-            </div>
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 flex flex-col items-center justify-center text-center gap-1.5 text-xs">
+            <p class="font-semibold text-white">全國高中職專題競賽 — 活動滿意度調查</p>
+            <p class="text-slate-400">© 2026 NPTU CCS. All Rights Reserved.</p>
         </div>
     </footer>
 
@@ -673,959 +654,370 @@
 
     <script>
         // ==========================================
-        // 1. STATE & DEFAULT DATA CONFIGURATION
+        // 1. GLOBAL STATE & DEFAULT CONFIGURATION
         // ==========================================
         const ADMIN_ACCOUNT = 'ccs.nptu';
         const ADMIN_PASSWORD = 'Nccs&2022';
+        let GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwFWFzlY6ipmJXYw3tZTFpZWiE0fIAmD45EuZZfUgkGm4_pGep5VdPUuQeYQysxOp3kuA/exec';
+
         let isAdminAuthenticated = false;
         let pendingAdminAction = null;
+        let currentVerifiedEmail = '';
+        let generatedOtp = '';
+        let currentResponseId = '';
+        let currentWheelRotation = 0;
+        let isSpinning = false;
 
-        // Google Apps Script Web App URL
-        let GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxcrS0mjR4Sr3IRlxiFa99392KKBDOBBXilQIFqthVEAuERv4RhnMz3zPjv9jzzcemLyw/exec';
+        const verifiedEmailsSet = new Set();
+        const responses = [];
 
         let surveyQuestions = [
             {
                 id: 'gender',
-                section: '基本資料',
-                title: '生理性別',
+                section: '壹、基本資料',
+                title: '1. 您的生理性別',
                 type: 'choice',
                 required: true,
                 options: ['男', '女']
             },
             {
                 id: 'identity',
-                section: '基本資料',
-                title: '身分',
+                section: '壹、基本資料',
+                title: '2. 您的身分別',
                 type: 'choice_other',
                 required: true,
                 options: ['學生', '教師']
             },
             {
                 id: 'q1',
-                section: '滿意度調查 (1分=非常不滿意，5分=非常滿意)',
-                title: '1. 我對於本次活動主題、內容之滿意度',
+                section: '貳、活動滿意度調查（1分為非常不滿意，5分為非常滿意）',
+                title: '1. 競賽前通知及賽程資訊說明清楚明確',
                 type: 'rating',
                 required: true
             },
             {
                 id: 'q2',
-                title: '2. 我對於本次活動內容符合自己需求',
+                section: '貳、活動滿意度調查（1分為非常不滿意，5分為非常滿意）',
+                title: '2. 報到流程順暢且報到處標示清楚',
                 type: 'rating',
                 required: true
             },
             {
                 id: 'q3',
-                title: '3. 我對於本次活動內容之助益程度',
+                section: '貳、活動滿意度調查（1分為非常不滿意，5分為非常滿意）',
+                title: '3. 競賽場地動線規劃與指引清楚',
                 type: 'rating',
                 required: true
             },
             {
                 id: 'q4',
-                title: '4. 我對於本次活動場地的舒適性',
+                section: '貳、活動滿意度調查（1分為非常不滿意，5分為非常滿意）',
+                title: '4. 競賽場地環境整潔、舒適及設備完善',
                 type: 'rating',
                 required: true
             },
             {
                 id: 'q5',
-                title: '5. 我對於本次活動時間的適切性',
+                section: '貳、活動滿意度調查（1分為非常不滿意，5分為非常滿意）',
+                title: '5. 競賽時間與議程安排適當',
                 type: 'rating',
                 required: true
             },
             {
                 id: 'q6',
-                title: '6. 我對於本次活動提升自身表達能力',
+                section: '貳、活動滿意度調查（1分為非常不滿意，5分為非常滿意）',
+                title: '6. 工作人員服務態度親切並能即時協助',
                 type: 'rating',
                 required: true
             },
             {
                 id: 'q7',
-                title: '7. 我對於再次參與類似活動的意願性',
+                section: '貳、活動滿意度調查（1分為非常不滿意，5分為非常滿意）',
+                title: '7. 評審過程公平、公正且具專業性',
                 type: 'rating',
                 required: true
             },
             {
                 id: 'q8',
-                title: '8. 我對於本次活動整體規劃之滿意度',
+                section: '貳、活動滿意度調查（1分為非常不滿意，5分為非常滿意）',
+                title: '8. 參與本次專題競賽對專業能力與學習有所助益',
                 type: 'rating',
                 required: true
             },
             {
                 id: 'q9',
-                title: '9. 我對於本次活動的行政支援與服務滿意度',
+                section: '貳、活動滿意度調查（1分為非常不滿意，5分為非常滿意）',
+                title: '9. 整體而言，您對本次專題競賽活動感到滿意',
                 type: 'rating',
                 required: true
             },
             {
                 id: 'q10',
-                title: '10. 其他意見 (若您有上述問題未提及之意見或建議，請予以簡述)：',
+                section: '參、開放式建議',
+                title: '10. 您對本次專題競賽活動有任何建議或鼓勵的話嗎？（選填）',
                 type: 'text',
                 required: false,
-                placeholder: '請輸入您對本次全國高中職專題競賽的建議或鼓勵...'
+                placeholder: '歡迎分享您對賽程安排、場地動線或未來活動的寶貴建議...'
             }
         ];
 
-        // Confirmed Prize Pool (Total 330 items)
-        let lotteryPrizes = [
-            { id: 'p1', name: '識別證套', quantity: 10, probability: 3.03, color: '#f59e0b' },
-            { id: 'p2', name: '不織布袋', quantity: 50, probability: 15.15, color: '#0284c7' },
-            { id: 'p3', name: '徽章', quantity: 80, probability: 24.24, color: '#0d9488' },
-            { id: 'p4', name: '原子筆', quantity: 90, probability: 27.27, color: '#4f46e5' },
-            { id: 'p5', name: '資料夾', quantity: 100, probability: 30.31, color: '#0891b2' }
+        const initialPrizesStock = [
+            { id: 'p1', name: '資料夾', initialQuantity: 90, quantity: 90, probability: 27.27, color: '#0284c7' },
+            { id: 'p2', name: '不織布袋', initialQuantity: 60, quantity: 60, probability: 18.18, color: '#0d9488' },
+            { id: 'p3', name: '徽章', initialQuantity: 60, quantity: 60, probability: 18.18, color: '#f59e0b' },
+            { id: 'p4', name: '原子筆', initialQuantity: 60, quantity: 60, probability: 18.18, color: '#6366f1' },
+            { id: 'p5', name: '識別證套', initialQuantity: 60, quantity: 60, probability: 18.19, color: '#ec4899' }
         ];
 
-        let responses = [];
-        let verifiedEmailsSet = new Set();
-        let currentVerifiedEmail = '';
-        let generatedOtp = '';
-        let currentResponseId = null;
-        let currentWheelRotation = 0;
-        let isSpinning = false;
+        let lotteryPrizes = JSON.parse(JSON.stringify(initialPrizesStock));
 
-        // ==========================================
-        // 2. NAVIGATION & ADMIN AUTHENTICATION
-        // ==========================================
-        function switchView(viewName) {
-            if (viewName === 'admin' && !isAdminAuthenticated) {
-                pendingAdminAction = () => switchView('admin');
-                openAdminLoginModal();
-                return;
+        function syncFromGoogleSheet(showFeedback = false) {
+            if (!GAS_WEB_APP_URL || !GAS_WEB_APP_URL.startsWith('https://script.google.com/')) return;
+            const syncBtn = document.getElementById('sync-sheet-btn');
+            if (syncBtn && showFeedback) {
+                syncBtn.disabled = true;
             }
 
-            const surveyView = document.getElementById('view-survey');
-            const adminView = document.getElementById('view-admin');
-            const navSurveyBtn = document.getElementById('nav-survey-btn');
-            const navAdminBtn = document.getElementById('nav-admin-btn');
-
-            if (viewName === 'survey') {
-                surveyView.classList.remove('hidden');
-                adminView.classList.add('hidden');
-                navSurveyBtn.className = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-sm flex items-center gap-1.5';
-                navAdminBtn.className = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white flex items-center gap-1.5';
-            } else {
-                surveyView.classList.add('hidden');
-                adminView.classList.remove('hidden');
-                navAdminBtn.className = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-sm flex items-center gap-1.5';
-                navSurveyBtn.className = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white flex items-center gap-1.5';
-                updateDashboardStats();
-                renderPrizeSettingsTable();
-            }
-            lucide.createIcons();
-        }
-
-        function openAdminLoginModal() {
-            document.getElementById('admin-username').value = '';
-            document.getElementById('admin-password').value = '';
-            document.getElementById('admin-login-modal').classList.remove('hidden');
-            setTimeout(() => document.getElementById('admin-username').focus(), 100);
-            lucide.createIcons();
-        }
-
-        function closeAdminLoginModal() {
-            document.getElementById('admin-login-modal').classList.add('hidden');
-            pendingAdminAction = null;
-        }
-
-        function handleAdminLogin(e) {
-            e.preventDefault();
-            const user = document.getElementById('admin-username').value.trim();
-            const pass = document.getElementById('admin-password').value;
-
-            if (user === ADMIN_ACCOUNT && pass === ADMIN_PASSWORD) {
-                isAdminAuthenticated = true;
-                const actionToRun = pendingAdminAction;
-                closeAdminLoginModal();
-                showToast('管理者登入成功！', 'success');
-                if (typeof actionToRun === 'function') {
-                    actionToRun();
-                } else {
-                    switchView('admin');
-                }
-            } else {
-                showToast('帳號或密碼錯誤，請重新確認！', 'error');
-            }
-        }
-
-        function logoutAdmin() {
-            isAdminAuthenticated = false;
-            showToast('已安全登出管理後台。', 'info');
-            switchView('survey');
-        }
-
-        function requireAdminForQuestionEditor() {
-            if (!isAdminAuthenticated) {
-                pendingAdminAction = () => openQuestionEditorModal();
-                openAdminLoginModal();
-                return;
-            }
-            openQuestionEditorModal();
-        }
-
-        // ==========================================
-        // 3. STEPPER & EMAIL OTP VERIFICATION
-        // ==========================================
-        function updateStepper(step) {
-            const line = document.getElementById('progress-line');
-            line.style.width = step === 1 ? '0%' : step === 2 ? '50%' : '100%';
-
-            for (let i = 1; i <= 3; i++) {
-                const circle = document.getElementById(`step-circle-${i}`);
-                const label = document.getElementById(`step-label-${i}`);
-                if (i <= step) {
-                    circle.className = 'w-9 h-9 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-bold flex items-center justify-center text-sm shadow-md ring-4 ring-white transition-colors';
-                    label.className = 'text-xs font-semibold text-sky-700 mt-1.5';
-                } else {
-                    circle.className = 'w-9 h-9 rounded-full bg-slate-200 text-slate-500 font-bold flex items-center justify-center text-sm ring-4 ring-white transition-colors';
-                    label.className = 'text-xs font-medium text-slate-500 mt-1.5';
-                }
-            }
-
-            document.getElementById('step-1-panel').classList.toggle('hidden', step !== 1);
-            document.getElementById('step-2-panel').classList.toggle('hidden', step !== 2);
-            document.getElementById('step-3-panel').classList.toggle('hidden', step !== 3);
-            lucide.createIcons();
-        }
-
-        async function sendVerificationCode() {
-            const emailInput = document.getElementById('user-email');
-            const email = emailInput.value.trim();
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-            if (!email || !emailRegex.test(email)) {
-                showToast('請輸入有效的電子信箱格式！', 'error');
-                emailInput.focus();
-                return;
-            }
-
-            if (verifiedEmailsSet.has(email.toLowerCase())) {
-                showToast('此電子信箱已完成過問卷與抽獎，每人限參加一次！', 'error');
-                return;
-            }
-
-            const btn = document.getElementById('send-otp-btn');
-            btn.disabled = true;
-            btn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>發送中...</span>`;
-
-            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-
-            if (GAS_WEB_APP_URL && GAS_WEB_APP_URL.startsWith('https://script.google.com/')) {
-                try {
-                    const response = await fetch(GAS_WEB_APP_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify({
-                            action: 'sendOtp',
-                            email: email,
-                            otp: generatedOtp
-                        })
-                    });
-                    const resData = await response.json();
-                    if (resData.status === 'success') {
-                        document.getElementById('demo-otp-box').classList.add('hidden');
-                        document.getElementById('real-otp-sent-box').classList.remove('hidden');
-                        document.getElementById('otp-input-section').classList.remove('hidden');
-                        showToast(`驗證碼已成功寄送至 ${email}！`, 'success');
-                    } else {
-                        throw new Error(resData.message || '寄信失敗');
-                    }
-                } catch (err) {
-                    console.error('GAS sendOtp error:', err);
-                    showToast('GAS 寄信發生錯誤，已切換為畫面顯示驗證碼模式。', 'error');
-                    document.getElementById('demo-otp-code').textContent = generatedOtp;
-                    document.getElementById('demo-otp-box').classList.remove('hidden');
-                    document.getElementById('real-otp-sent-box').classList.add('hidden');
-                    document.getElementById('otp-input-section').classList.remove('hidden');
-                }
-            } else {
-                // Local simulation mode
-                await new Promise(r => setTimeout(r, 400));
-                document.getElementById('demo-otp-code').textContent = generatedOtp;
-                document.getElementById('demo-otp-box').classList.remove('hidden');
-                document.getElementById('real-otp-sent-box').classList.add('hidden');
-                document.getElementById('otp-input-section').classList.remove('hidden');
-                showToast('驗證碼已產生！請輸入 6 位數驗證碼。', 'info');
-            }
-
-            btn.disabled = false;
-            btn.innerHTML = `<span>重新發送</span><i data-lucide="send" class="w-4 h-4"></i>`;
-            lucide.createIcons();
-            document.getElementById('otp-input').focus();
-        }
-
-        function verifyCode() {
-            const email = document.getElementById('user-email').value.trim();
-            const userOtp = document.getElementById('otp-input').value.trim();
-
-            if (!generatedOtp) {
-                showToast('請先點擊「發送驗證碼」！', 'error');
-                return;
-            }
-            if (userOtp !== generatedOtp) {
-                showToast('驗證碼不正確，請重新確認！', 'error');
-                return;
-            }
-
-            currentVerifiedEmail = email;
-            document.getElementById('verified-email-display').textContent = currentVerifiedEmail;
-            renderSurveyQuestions();
-            updateStepper(2);
-            showToast('電子信箱驗證成功！請開始填寫問卷。', 'success');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // ==========================================
-        // 4. DYNAMIC SURVEY RENDERING & SUBMISSION
-        // ==========================================
-        function renderSurveyQuestions() {
-            const container = document.getElementById('questions-container');
-            container.innerHTML = surveyQuestions.map(q => {
-                const sectionHeader = q.section ? `
-                    <div class="pt-2 pb-1">
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#06182c] text-cyan-300 text-xs font-bold tracking-wider shadow-sm">
-                            <i data-lucide="layers" class="w-3.5 h-3.5 text-amber-400"></i>
-                            ${q.section}
-                        </span>
-                    </div>
-                ` : '';
-
-                let inputHtml = '';
-                if (q.type === 'rating') {
-                    const labels = ['非常不滿意', '不滿意', '普通', '滿意', '非常滿意'];
-                    inputHtml = `
-                        <div class="grid grid-cols-5 gap-2 sm:gap-3 mt-4">
-                            ${[1, 2, 3, 4, 5].map(score => `
-                                <label class="cursor-pointer group">
-                                    <input type="radio" name="q_${q.id}" value="${score}" ${q.required ? 'required' : ''} class="peer sr-only">
-                                    <div class="p-2.5 sm:p-3.5 rounded-xl border-2 border-slate-200 bg-slate-50/60 text-center transition-all peer-checked:border-sky-600 peer-checked:bg-sky-50 peer-checked:shadow-sm group-hover:border-sky-300">
-                                        <div class="text-lg sm:text-xl font-extrabold text-slate-700 peer-checked:text-sky-700">${score}</div>
-                                        <div class="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-tight">${labels[score - 1]}</div>
-                                    </div>
-                                </label>
-                            `).join('')}
-                        </div>
-                    `;
-                } else if (q.type === 'choice' || q.type === 'choice_other') {
-                    inputHtml = `
-                        <div class="space-y-2.5 mt-3">
-                            ${(q.options || []).map(opt => `
-                                <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-sky-300 hover:bg-sky-50/40 cursor-pointer transition-all">
-                                    <input type="radio" name="q_${q.id}" value="${opt}" ${q.required ? 'required' : ''}
-                                        onchange="toggleOtherInput('${q.id}', false)"
-                                        class="w-4 h-4 text-sky-600 focus:ring-sky-500">
-                                    <span class="text-sm font-medium text-slate-800">${opt}</span>
-                                </label>
-                            `).join('')}
-                            ${q.type === 'choice_other' ? `
-                                <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-sky-300 hover:bg-sky-50/40 cursor-pointer transition-all">
-                                    <input type="radio" name="q_${q.id}" value="__OTHER__" ${q.required ? 'required' : ''}
-                                        onchange="toggleOtherInput('${q.id}', true)"
-                                        class="w-4 h-4 text-sky-600 focus:ring-sky-500">
-                                    <span class="text-sm font-medium text-slate-800 shrink-0">其他：</span>
-                                    <input type="text" id="other_text_${q.id}" placeholder="請註明您的身分"
-                                        onfocus="selectOtherRadio('${q.id}')"
-                                        class="flex-grow px-3 py-1.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 outline-none">
-                                </label>
-                            ` : ''}
-                        </div>
-                    `;
-                } else if (q.type === 'text') {
-                    inputHtml = `
-                        <textarea name="q_${q.id}" rows="3" ${q.required ? 'required' : ''}
-                            placeholder="${q.placeholder || '請輸入您的意見...'}"
-                            class="w-full mt-3 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none text-sm text-slate-800"></textarea>
-                    `;
-                }
-
-                return `
-                    ${sectionHeader}
-                    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200/90 hover:border-sky-200 transition-colors">
-                        <label class="block text-base font-bold text-slate-900">
-                            ${q.title} ${q.required ? '<span class="text-rose-500">*</span>' : ''}
-                        </label>
-                        ${inputHtml}
-                    </div>
-                `;
-            }).join('');
-            lucide.createIcons();
-        }
-
-        function toggleOtherInput(qId, isOther) {
-            const otherInput = document.getElementById(`other_text_${qId}`);
-            if (otherInput && isOther) {
-                otherInput.focus();
-            }
-        }
-
-        function selectOtherRadio(qId) {
-            const radios = document.querySelectorAll(`input[name="q_${qId}"]`);
-            radios.forEach(r => {
-                if (r.value === '__OTHER__') r.checked = true;
-            });
-        }
-
-        async function submitSurvey(e) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const answers = {};
-
-            for (const q of surveyQuestions) {
-                let val = formData.get(`q_${q.id}`) || '';
-                if (q.type === 'choice_other' && val === '__OTHER__') {
-                    const otherVal = (document.getElementById(`other_text_${q.id}`)?.value || '').trim();
-                    if (!otherVal) {
-                        showToast(`請填寫「${q.title}」的其他說明欄位！`, 'error');
-                        document.getElementById(`other_text_${q.id}`)?.focus();
-                        return;
-                    }
-                    val = `其他：${otherVal}`;
-                }
-                answers[q.id] = val;
-            }
-
-            const timestamp = new Date().toLocaleString('zh-TW', { hour12: false });
-            currentResponseId = 'resp_' + Date.now();
-            const newRecord = {
-                id: currentResponseId,
-                email: currentVerifiedEmail,
-                timestamp: timestamp,
-                answers: answers,
-                prizeWon: null
-            };
-
-            responses.unshift(newRecord);
-            verifiedEmailsSet.add(currentVerifiedEmail.toLowerCase());
-            updateBadgeCount();
-
-            // Sync initial survey response to Google Sheets if GAS URL is set
-            if (GAS_WEB_APP_URL && GAS_WEB_APP_URL.startsWith('https://script.google.com/')) {
-                fetch(GAS_WEB_APP_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        action: 'saveResponse',
-                        email: currentVerifiedEmail,
-                        timestamp: timestamp,
-                        answers: answers,
-                        prizeWon: '尚未抽獎'
-                    })
-                }).catch(err => console.error('GAS saveResponse error:', err));
-            }
-
-            // Prepare Lottery Wheel
-            document.getElementById('lottery-action-area').classList.remove('hidden');
-            document.getElementById('lottery-result-card').classList.add('hidden');
-            document.getElementById('spin-btn').disabled = false;
-            renderLotteryWheel();
-            updateStepper(3);
-            showToast('問卷送出成功！請點擊轉盤進行抽獎。', 'success');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // ==========================================
-        // 5. LOTTERY WHEEL RENDER & WEIGHTED DRAW
-        // ==========================================
-        function renderLotteryWheel() {
-            const svg = document.getElementById('wheel-svg');
-            if (!svg) return;
-
-            const activePrizes = lotteryPrizes.filter(p => Number(p.quantity) > 0);
-            const items = activePrizes.length > 0 ? activePrizes : lotteryPrizes;
-            const total = items.length;
-            const sliceAngle = 360 / total;
-
-            let svgContent = '';
-            items.forEach((prize, idx) => {
-                const startAngle = idx * sliceAngle;
-                const endAngle = startAngle + sliceAngle;
-                const startRad = (startAngle * Math.PI) / 180;
-                const endRad = (endAngle * Math.PI) / 180;
-
-                const x1 = 100 + 100 * Math.cos(startRad);
-                const y1 = 100 + 100 * Math.sin(startRad);
-                const x2 = 100 + 100 * Math.cos(endRad);
-                const y2 = 100 + 100 * Math.sin(endRad);
-                const largeArc = sliceAngle > 180 ? 1 : 0;
-
-                const pathData = `M 100 100 L ${x1} ${y1} A 100 100 0 ${largeArc} 1 ${x2} ${y2} Z`;
-                const midAngle = startAngle + sliceAngle / 2;
-                const midRad = (midAngle * Math.PI) / 180;
-                const textX = 100 + 62 * Math.cos(midRad);
-                const textY = 100 + 62 * Math.sin(midRad);
-
-                svgContent += `
-                    <path d="${pathData}" fill="${prize.color}" stroke="#ffffff" stroke-width="1.5"></path>
-                    <text x="${textX}" y="${textY}" fill="#ffffff" font-size="9" font-weight="bold"
-                        text-anchor="middle" dominant-baseline="middle"
-                        transform="rotate(${midAngle}, ${textX}, ${textY})">
-                        ${prize.name}
-                    </text>
-                `;
-            });
-            svg.innerHTML = svgContent;
-        }
-
-        function spinWheel() {
-            if (isSpinning) return;
-
-            const availablePrizes = lotteryPrizes.filter(p => Number(p.quantity) > 0);
-            if (availablePrizes.length === 0) {
-                showToast('所有獎品皆已全數抽完，感謝您的參與！', 'info');
-                return;
-            }
-
-            isSpinning = true;
-            const spinBtn = document.getElementById('spin-btn');
-            spinBtn.disabled = true;
-
-            // Weighted random selection among prizes with remaining stock
-            const totalWeight = availablePrizes.reduce((sum, p) => sum + Number(p.probability || 1), 0);
-            let randomVal = Math.random() * totalWeight;
-            let selectedPrize = availablePrizes[0];
-
-            for (const p of availablePrizes) {
-                randomVal -= Number(p.probability || 1);
-                if (randomVal <= 0) {
-                    selectedPrize = p;
-                    break;
-                }
-            }
-
-            // Deduct prize quantity
-            selectedPrize.quantity = Math.max(0, Number(selectedPrize.quantity) - 1);
-
-            // Calculate rotation angle to land on selectedPrize slice
-            const items = availablePrizes;
-            const targetIdx = items.findIndex(p => p.id === selectedPrize.id);
-            const sliceAngle = 360 / items.length;
-            const targetCenterAngle = targetIdx * sliceAngle + sliceAngle / 2;
-            const extraSpins = 360 * 6;
-            const finalTargetRotation = extraSpins + (360 - targetCenterAngle);
-            currentWheelRotation += finalTargetRotation - (currentWheelRotation % 360);
-
-            const spinnerEl = document.getElementById('wheel-spinner');
-            spinnerEl.style.transform = `rotate(${currentWheelRotation}deg)`;
-
-            setTimeout(async () => {
-                isSpinning = false;
-
-                // Record won prize on response
-                const rec = responses.find(r => r.id === currentResponseId);
-                if (rec) {
-                    rec.prizeWon = selectedPrize.name;
-                }
-
-                document.getElementById('lottery-action-area').classList.add('hidden');
-                document.getElementById('prize-result-title').textContent = `恭喜獲得：${selectedPrize.name}`;
-                document.getElementById('lottery-result-card').classList.remove('hidden');
-
-                // Sync won prize to Google Sheets
-                if (GAS_WEB_APP_URL && GAS_WEB_APP_URL.startsWith('https://script.google.com/') && rec) {
-                    try {
-                        const res = await fetch(GAS_WEB_APP_URL, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                            body: JSON.stringify({
-                                action: 'saveResponse',
-                                email: rec.email,
-                                timestamp: rec.timestamp,
-                                answers: rec.answers,
-                                prizeWon: selectedPrize.name
-                            })
-                        });
-                        const data = await res.json();
-                        if (data.status === 'success') {
-                            showToast('抽獎結果已同步寫入 Google 試算表！', 'success');
+            fetch(`${GAS_WEB_APP_URL}?action=getResponses`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        if (Array.isArray(data.prizes) && data.prizes.length > 0) {
+                            lotteryPrizes = data.prizes.map((p, i) => ({
+                                id: p.id || ('p' + (i + 1)),
+                                name: String(p.name || '獎項'),
+                                initialQuantity: Number(p.initialQuantity) || 0,
+                                quantity: Number(p.initialQuantity) || 0,
+                                probability: Number(p.probability) || 0,
+                                color: String(p.color || '#0284c7')
+                            }));
+                        } else {
+                            lotteryPrizes.forEach(p => {
+                                const initObj = initialPrizesStock.find(i => i.name === p.name);
+                                if (initObj) p.quantity = initObj.initialQuantity;
+                                else if (typeof p.initialQuantity === 'number') p.quantity = p.initialQuantity;
+                            });
                         }
-                    } catch (err) {
-                        console.error('GAS lottery sync error:', err);
+
+                        if (Array.isArray(data.questions) && data.questions.length > 0) {
+                            surveyQuestions = data.questions.map((q, i) => ({
+                                id: String(q.id || ('q_' + (i + 1))),
+                                section: String(q.section || ''),
+                                title: String(q.title || ''),
+                                type: String(q.type || 'rating'),
+                                required: q.required === true || q.required === 'true' || q.required === 'TRUE',
+                                options: Array.isArray(q.options) ? q.options : undefined,
+                                placeholder: q.placeholder ? String(q.placeholder) : undefined
+                            }));
+                            renderSurveyQuestions();
+                        }
+
+                        if (Array.isArray(data.records)) {
+                            responses.length = 0;
+                            verifiedEmailsSet.clear();
+
+                            data.records.forEach((rec, idx) => {
+                                const email = String(rec.email || '').trim().toLowerCase();
+                                if (!email) return;
+                                verifiedEmailsSet.add(email);
+                                const prizeWon = rec.prizeWon && rec.prizeWon !== '尚未抽獎' ? rec.prizeWon : null;
+                                if (prizeWon) {
+                                    const prizeObj = lotteryPrizes.find(p => p.name === prizeWon);
+                                    if (prizeObj && prizeObj.quantity > 0) {
+                                        prizeObj.quantity -= 1;
+                                    }
+                                }
+                                responses.push({
+                                    id: 'sheet_' + idx + '_' + Date.now(),
+                                    email: email,
+                                    timestamp: rec.timestamp || '',
+                                    answers: rec.answers || {},
+                                    prizeWon: prizeWon
+                                });
+                            });
+                        }
+
+                        updateDashboardStats();
+                        renderLotteryWheel();
+                        if (isAdminAuthenticated) {
+                            renderPrizeSettingsTable();
+                        }
+                        if (showFeedback) {
+                            showToast(`已從 Google 試算表同步 ${responses.length} 筆紀錄、題目與最新獎項設定！`, 'success');
+                        }
                     }
-                }
-            }, 4100);
-        }
-
-        function resetForNewUser() {
-            currentVerifiedEmail = '';
-            generatedOtp = '';
-            currentResponseId = null;
-            document.getElementById('user-email').value = '';
-            document.getElementById('otp-input').value = '';
-            document.getElementById('demo-otp-box').classList.add('hidden');
-            document.getElementById('real-otp-sent-box').classList.add('hidden');
-            document.getElementById('otp-input-section').classList.add('hidden');
-            document.getElementById('survey-form').reset();
-            updateStepper(1);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // ==========================================
-        // 6. ADMIN DASHBOARD STATS & PRIZE SETTINGS
-        // ==========================================
-        function updateBadgeCount() {
-            document.getElementById('response-count-badge').textContent = responses.length;
-        }
-
-        function updateDashboardStats() {
-            updateBadgeCount();
-            const total = responses.length;
-            document.getElementById('stat-total-responses').textContent = total;
-
-            const ratingQuestions = surveyQuestions.filter(q => q.type === 'rating');
-            let totalScoreSum = 0;
-            let totalScoreCount = 0;
-            let positiveCount = 0;
-
-            responses.forEach(r => {
-                ratingQuestions.forEach(q => {
-                    const val = Number(r.answers[q.id]);
-                    if (val >= 1 && val <= 5) {
-                        totalScoreSum += val;
-                        totalScoreCount++;
-                        if (val >= 4) positiveCount++;
+                })
+                .catch(err => {
+                    console.warn('Sync from Google Sheet skipped or failed:', err);
+                    if (showFeedback) {
+                        showToast('同步試算表資料失敗，請確認 GAS 已更新為最新部署版本。', 'error');
                     }
+                })
+                .finally(() => {
+                    if (syncBtn) syncBtn.disabled = false;
                 });
-            });
-
-            const avgScore = totalScoreCount > 0 ? (totalScoreSum / totalScoreCount).toFixed(2) : '0.0';
-            const posRate = totalScoreCount > 0 ? Math.round((positiveCount / totalScoreCount) * 100) : 0;
-
-            document.getElementById('stat-avg-score').textContent = avgScore;
-            document.getElementById('stat-satisfaction-rate').textContent = `正面評價佔比（4~5分）：${posRate}%`;
-
-            const prizesWonCount = responses.filter(r => r.prizeWon).length;
-            const remainingStock = lotteryPrizes.reduce((sum, p) => sum + Number(p.quantity || 0), 0);
-            document.getElementById('stat-prizes-won').textContent = prizesWonCount;
-            document.getElementById('stat-prizes-remaining').textContent = `目前剩餘總庫存：${remainingStock} 份`;
-
-            renderQuestionCharts();
-            renderResponsesTable();
-        }
-
-        function renderQuestionCharts() {
-            const container = document.getElementById('charts-container');
-            const ratingQuestions = surveyQuestions.filter(q => q.type === 'rating');
-
-            if (responses.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center py-6 text-sm text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">尚無填答數據可繪製統計圖表</div>`;
-                return;
-            }
-
-            container.innerHTML = ratingQuestions.map(q => {
-                let sum = 0, cnt = 0;
-                responses.forEach(r => {
-                    const v = Number(r.answers[q.id]);
-                    if (v) { sum += v; cnt++; }
-                });
-                const avg = cnt > 0 ? (sum / cnt).toFixed(2) : 0;
-                const pct = Math.round((avg / 5) * 100);
-
-                return `
-                    <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 space-y-2">
-                        <div class="flex justify-between items-start gap-2">
-                            <p class="text-xs font-bold text-slate-800 leading-snug">${q.title}</p>
-                            <span class="text-xs font-extrabold text-sky-700 bg-sky-100 px-2 py-0.5 rounded shrink-0">${avg} 分</span>
-                        </div>
-                        <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderPrizeSettingsTable() {
-            const tbody = document.getElementById('prize-settings-tbody');
-            tbody.innerHTML = lotteryPrizes.map((p, idx) => `
-                <tr>
-                    <td class="py-2.5 px-2">
-                        <input type="text" value="${p.name}" onchange="updatePrizeField(${idx}, 'name', this.value)"
-                            class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-medium">
-                    </td>
-                    <td class="py-2.5 px-2">
-                        <input type="number" min="0" value="${p.quantity}" onchange="updatePrizeField(${idx}, 'quantity', Number(this.value))"
-                            class="w-24 px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-mono">
-                    </td>
-                    <td class="py-2.5 px-2">
-                        <input type="number" step="0.01" min="0" max="100" value="${p.probability}" onchange="updatePrizeField(${idx}, 'probability', Number(this.value))"
-                            class="w-24 px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-mono">
-                    </td>
-                    <td class="py-2.5 px-2">
-                        <input type="color" value="${p.color}" onchange="updatePrizeField(${idx}, 'color', this.value)"
-                            class="w-10 h-8 rounded cursor-pointer border border-slate-200">
-                    </td>
-                    <td class="py-2.5 px-2 text-right">
-                        <button type="button" onclick="removePrizeRow(${idx})" class="text-rose-500 hover:text-rose-700 p-1">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-            updateTotalProbDisplay();
-            lucide.createIcons();
-        }
-
-        function updatePrizeField(index, field, value) {
-            if (lotteryPrizes[index]) {
-                lotteryPrizes[index][field] = value;
-                updateTotalProbDisplay();
-            }
-        }
-
-        function updateTotalProbDisplay() {
-            const sum = lotteryPrizes.reduce((acc, p) => acc + Number(p.probability || 0), 0);
-            const display = document.getElementById('total-prob-display');
-            display.textContent = `目前總機率：${sum.toFixed(2)}%`;
-            display.className = Math.abs(sum - 100) < 0.05 ? 'text-xs font-bold text-emerald-600' : 'text-xs font-bold text-rose-600';
-        }
-
-        function addPrizeRow() {
-            lotteryPrizes.push({
-                id: 'p_' + Date.now(),
-                name: '新增紀念品',
-                quantity: 10,
-                probability: 0,
-                color: '#6366f1'
-            });
-            renderPrizeSettingsTable();
-        }
-
-        function removePrizeRow(index) {
-            if (lotteryPrizes.length <= 1) {
-                showToast('至少須保留一個抽獎獎項！', 'error');
-                return;
-            }
-            lotteryPrizes.splice(index, 1);
-            renderPrizeSettingsTable();
-        }
-
-        function savePrizeSettings() {
-            renderLotteryWheel();
-            updateDashboardStats();
-            showToast('抽獎獎品與機率設定已更新並套用至轉盤！', 'success');
-        }
-
-        function saveGasSettings() {
-            const url = document.getElementById('gas-url-input').value.trim();
-            const badge = document.getElementById('gas-status-badge');
-
-            if (!url) {
-                GAS_WEB_APP_URL = '';
-                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 self-start';
-                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> 目前為本機模擬模式`;
-                showToast('已清除 GAS 網址，切換回本機模擬模式。', 'info');
-                return;
-            }
-
-            if (!url.startsWith('https://script.google.com/')) {
-                showToast('請輸入正確的 Google Apps Script 網址（https://script.google.com/...）', 'error');
-                return;
-            }
-
-            GAS_WEB_APP_URL = url;
-            badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 self-start';
-            badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> 已啟用 Google 真實寄信與同步`;
-            showToast('Google Apps Script 連線已啟用！', 'success');
-        }
-
-        function renderResponsesTable() {
-            const tbody = document.getElementById('responses-tbody');
-            if (!tbody) return;
-
-            if (responses.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="py-8 text-center text-slate-400">尚無填答紀錄，請先填寫問卷或點擊上方「匯入模擬填答數據」。</td>
-                    </tr>
-                `;
-                return;
-            }
-
-            const ratingQuestions = surveyQuestions.filter(q => q.type === 'rating');
-            tbody.innerHTML = responses.map(r => {
-                let sum = 0, cnt = 0;
-                ratingQuestions.forEach(q => {
-                    const v = Number(r.answers[q.id]);
-                    if (v) { sum += v; cnt++; }
-                });
-                const avg = cnt > 0 ? (sum / cnt).toFixed(1) : '-';
-                const demoInfo = `${r.answers.gender || '-'} / ${r.answers.identity || '-'}`;
-                const comment = r.answers.q10 || '<span class="text-slate-300">無</span>';
-
-                return `
-                    <tr class="hover:bg-slate-50">
-                        <td class="py-3 px-3 font-medium text-slate-800">${r.email}</td>
-                        <td class="py-3 px-3 text-slate-600">${demoInfo}</td>
-                        <td class="py-3 px-3 text-xs text-slate-500">${r.timestamp}</td>
-                        <td class="py-3 px-3 font-bold text-sky-700">${avg} 分</td>
-                        <td class="py-3 px-3">
-                            ${r.prizeWon ? `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">${r.prizeWon}</span>` : '<span class="text-xs text-slate-400">尚未抽獎</span>'}
-                        </td>
-                        <td class="py-3 px-3 text-slate-600 max-w-xs truncate" title="${r.answers.q10 || ''}">${comment}</td>
-                        <td class="py-3 px-3 text-right">
-                            <button type="button" onclick="requestDeleteResponse('${r.id}')" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 hover:border-rose-600 transition-all" title="刪除此筆紀錄">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                <span>刪除</span>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-            lucide.createIcons();
-        }
-
-        let pendingDeleteResponseId = null;
-
-        function requestDeleteResponse(responseId) {
-            const target = responses.find(r => r.id === responseId);
-            if (!target) return;
-
-            pendingDeleteResponseId = responseId;
-            const descEl = document.getElementById('delete-confirm-desc');
-            if (target.prizeWon) {
-                descEl.innerHTML = `確定要刪除 <strong>${target.email}</strong> 的填答紀錄嗎？<br><span class="text-amber-700 font-semibold mt-1 inline-block">※ 系統將同步把「${target.prizeWon}」剩餘庫存數量 +1 回補。</span>`;
-            } else {
-                descEl.innerHTML = `確定要刪除 <strong>${target.email}</strong> 的填答紀錄嗎？刪除後將釋出該信箱的填答資格。`;
-            }
-
-            document.getElementById('delete-confirm-modal').classList.remove('hidden');
-            lucide.createIcons();
-        }
-
-        function closeDeleteConfirmModal() {
-            pendingDeleteResponseId = null;
-            document.getElementById('delete-confirm-modal').classList.add('hidden');
-        }
-
-        async function confirmDeleteResponse() {
-            if (!pendingDeleteResponseId) return;
-
-            const idx = responses.findIndex(r => r.id === pendingDeleteResponseId);
-            if (idx === -1) {
-                closeDeleteConfirmModal();
-                return;
-            }
-
-            const target = responses[idx];
-            const deletedEmail = target.email;
-            const wonPrizeName = target.prizeWon;
-
-            // 1. 回補抽獎獎品庫存數量 (+1)
-            let restoredPrizeMsg = '';
-            if (wonPrizeName) {
-                const prizeObj = lotteryPrizes.find(p => p.name === wonPrizeName);
-                if (prizeObj) {
-                    prizeObj.quantity = Number(prizeObj.quantity || 0) + 1;
-                    restoredPrizeMsg = `，並已自動回補「${wonPrizeName}」庫存 +1`;
-                }
-            }
-
-            // 2. 移除該筆填答紀錄並解除信箱重複限制
-            responses.splice(idx, 1);
-            if (deletedEmail) {
-                verifiedEmailsSet.delete(deletedEmail.toLowerCase().trim());
-            }
-
-            closeDeleteConfirmModal();
-            renderLotteryWheel();
-            updateDashboardStats();
-            showToast(`已刪除 ${deletedEmail} 的紀錄${restoredPrizeMsg}！`, 'success');
-
-            // 3. 若有串接 Google Apps Script，同步從試算表刪除該列資料
-            if (GAS_WEB_APP_URL && GAS_WEB_APP_URL.startsWith('https://script.google.com/')) {
-                try {
-                    const res = await fetch(GAS_WEB_APP_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify({
-                            action: 'deleteResponse',
-                            email: deletedEmail
-                        })
-                    });
-                    const data = await res.json();
-                    if (data.status === 'success' && data.deleted) {
-                        showToast('Google 試算表中的對應資料列也已同步移除！', 'info');
-                    }
-                } catch (err) {
-                    console.error('GAS deleteResponse error:', err);
-                }
-            }
         }
 
         function copyGasScriptCode() {
-            const gasCode = `function doPost(e) {
-  try {
-    var data = JSON.parse(e.postData.contents);
+            const gasCode = `function doGet(e) {
+  var action = (e && e.parameter && e.parameter.action) ? e.parameter.action : '';
+  if (action === 'getResponses') {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheets()[0];
-
-    // 自動建立標題列（若試算表為空）
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow([
-        '填答時間', '驗證信箱', '生理性別', '身分',
-        'Q1_主題內容', 'Q2_符合需求', 'Q3_助益程度', 'Q4_場地舒適',
-        'Q5_時間適切', 'Q6_提升表達', 'Q7_再參與意願', 'Q8_整體規劃',
-        'Q9_行政服務', 'Q10_其他意見', '抽中獎項'
-      ]);
+    var sheet = ss.getSheetByName('問卷與抽獎紀錄');
+    var records = [];
+    if (sheet) {
+      var values = sheet.getDataRange().getValues();
+      for (var i = 1; i < values.length; i++) {
+        var row = values[i];
+        if (!row[1]) continue;
+        records.push({
+          timestamp: String(row[0] || ''),
+          email: String(row[1] || ''),
+          prizeWon: String(row[2] || ''),
+          answers: {
+            gender: String(row[3] || ''),
+            identity: String(row[4] || ''),
+            q1: String(row[5] || ''),
+            q2: String(row[6] || ''),
+            q3: String(row[7] || ''),
+            q4: String(row[8] || ''),
+            q5: String(row[9] || ''),
+            q6: String(row[10] || ''),
+            q7: String(row[11] || ''),
+            q8: String(row[12] || ''),
+            q9: String(row[13] || ''),
+            q10: String(row[14] || '')
+          }
+        });
+      }
     }
 
-    // 動作 1：寄送 6 位數驗證碼信件
-    if (data.action === 'sendOtp') {
-      var subject = '【全國高中職專題競賽】滿意度問卷電子信箱驗證碼';
-      var body = '您好！\\n\\n感謝您參與全國高中職專題競賽活動。\\n您的問卷信箱驗證碼為：' + data.otp + '\\n\\n請返回問卷頁面輸入此 6 位數驗證碼以繼續填寫問卷並參加抽獎。';
-      MailApp.sendEmail(data.email, subject, body);
+    var prizeSheet = ss.getSheetByName('獎項設定');
+    var prizes = [];
+    if (prizeSheet) {
+      var pValues = prizeSheet.getDataRange().getValues();
+      for (var j = 1; j < pValues.length; j++) {
+        var pRow = pValues[j];
+        if (!pRow[1]) continue;
+        prizes.push({
+          id: String(pRow[0] || ('p' + j)),
+          name: String(pRow[1] || ''),
+          initialQuantity: Number(pRow[2]) || 0,
+          probability: Number(pRow[3]) || 0,
+          color: String(pRow[4] || '#0284c7')
+        });
+      }
+    }
+
+    var qSheet = ss.getSheetByName('問卷題目設定');
+    var questions = [];
+    if (qSheet && qSheet.getLastRow() >= 2) {
+      var rawJson = qSheet.getRange(2, 1).getValue();
+      if (rawJson) {
+        try { questions = JSON.parse(rawJson); } catch (err) {}
+      }
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'success',
+      records: records.reverse(),
+      prizes: prizes,
+      questions: questions
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+  return ContentService.createTextOutput(JSON.stringify({ status: 'ok' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var action = data.action;
+
+    if (action === 'sendOtp') {
+      var email = data.email;
+      var otp = data.otp;
+      var subject = '【全國高中職專題競賽】滿意度調查驗證碼：' + otp;
+      var body = '您好：\\n\\n感謝您參與全國高中職專題競賽！\\n您的 6 位數信箱驗證碼為：' + otp + '\\n\\n請回到問卷頁面輸入此驗證碼以開始填答並參加幸運抽獎。';
+      MailApp.sendEmail(email, subject, body);
       return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // 動作 2：寫入或更新問卷與抽獎資料
-    if (data.action === 'saveResponse') {
-      var email = String(data.email || '').toLowerCase().trim();
-      var ans = data.answers || {};
-      var prize = data.prizeWon || '尚未抽獎';
-      var rows = sheet.getDataRange().getValues();
-
-      // 若該信箱已存在（例如剛送出問卷，現在抽完獎要更新獎項），直接更新該列
-      for (var i = 1; i < rows.length; i++) {
-        if (String(rows[i][1]).toLowerCase().trim() === email) {
-          sheet.getRange(i + 1, 15).setValue(prize);
-          return ContentService.createTextOutput(JSON.stringify({ status: 'success', updated: true }))
-            .setMimeType(ContentService.MimeType.JSON);
-        }
+    if (action === 'savePrizes') {
+      var ss = SpreadsheetApp.getActiveSpreadsheet();
+      var prizeSheet = ss.getSheetByName('獎項設定') || ss.insertSheet('獎項設定');
+      prizeSheet.clear();
+      prizeSheet.appendRow(['獎項ID', '獎項名稱', '總庫存數量', '中獎機率(%)', '轉盤顏色']);
+      var prizes = data.prizes || [];
+      for (var i = 0; i < prizes.length; i++) {
+        var p = prizes[i];
+        prizeSheet.appendRow([
+          p.id || ('p' + (i + 1)),
+          p.name || '',
+          Number(p.initialQuantity) || 0,
+          Number(p.probability) || 0,
+          p.color || '#0284c7'
+        ]);
       }
-
-      // 新增一筆完整紀錄
-      var rowValues = [
-        data.timestamp || new Date().toLocaleString('zh-TW'),
-        data.email,
-        ans.gender || '',
-        ans.identity || '',
-        ans.q1 || '',
-        ans.q2 || '',
-        ans.q3 || '',
-        ans.q4 || '',
-        ans.q5 || '',
-        ans.q6 || '',
-        ans.q7 || '',
-        ans.q8 || '',
-        ans.q9 || '',
-        ans.q10 || '',
-        prize
-      ];
-      sheet.appendRow(rowValues);
-      return ContentService.createTextOutput(JSON.stringify({ status: 'success', appended: true }))
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // 動作 3：管理者刪除特定信箱的問卷與抽獎紀錄
-    if (data.action === 'deleteResponse') {
-      var targetEmail = String(data.email || '').toLowerCase().trim();
-      var allRows = sheet.getDataRange().getValues();
-      for (var d = allRows.length - 1; d >= 1; d--) {
-        if (String(allRows[d][1]).toLowerCase().trim() === targetEmail) {
-          sheet.deleteRow(d + 1);
-          return ContentService.createTextOutput(JSON.stringify({ status: 'success', deleted: true }))
-            .setMimeType(ContentService.MimeType.JSON);
+    if (action === 'saveQuestions') {
+      var ss = SpreadsheetApp.getActiveSpreadsheet();
+      var qSheet = ss.getSheetByName('問卷題目設定') || ss.insertSheet('問卷題目設定');
+      qSheet.clear();
+      qSheet.appendRow(['問卷題目JSON結構', '最後更新時間']);
+      qSheet.appendRow([JSON.stringify(data.questions || []), new Date()]);
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (action === 'saveResponse') {
+      var ss = SpreadsheetApp.getActiveSpreadsheet();
+      var sheet = ss.getSheetByName('問卷與抽獎紀錄') || ss.insertSheet('問卷與抽獎紀錄');
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow(['填答時間', '驗證信箱', '抽中獎項', '生理性別', '身分別', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10建議']);
+      }
+      var ans = data.answers || {};
+      var rowValues = [
+        data.timestamp || new Date(),
+        data.email || '',
+        data.prizeWon || '尚未抽獎',
+        ans.gender || '',
+        ans.identity || '',
+        ans.q1 || '', ans.q2 || '', ans.q3 || '', ans.q4 || '', ans.q5 || '',
+        ans.q6 || '', ans.q7 || '', ans.q8 || '', ans.q9 || '', ans.q10 || ''
+      ];
+      var allData = sheet.getDataRange().getValues();
+      var updated = false;
+      for (var i = 1; i < allData.length; i++) {
+        if (String(allData[i][1]).trim().toLowerCase() === String(data.email).trim().toLowerCase()) {
+          sheet.getRange(i + 1, 1, 1, rowValues.length).setValues([rowValues]);
+          updated = true;
+          break;
         }
       }
-      return ContentService.createTextOutput(JSON.stringify({ status: 'success', deleted: false }))
+      if (!updated) {
+        sheet.appendRow(rowValues);
+      }
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (action === 'deleteResponse') {
+      var ss = SpreadsheetApp.getActiveSpreadsheet();
+      var sheet = ss.getSheetByName('問卷與抽獎紀錄');
+      if (sheet) {
+        var allData = sheet.getDataRange().getValues();
+        for (var i = allData.length - 1; i >= 1; i--) {
+          if (String(allData[i][1]).trim().toLowerCase() === String(data.email).trim().toLowerCase()) {
+            sheet.deleteRow(i + 1);
+          }
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
         .setMimeType(ContentService.MimeType.JSON);
     }
   } catch (err) {
@@ -1639,12 +1031,390 @@
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-            showToast('已複製 Google Apps Script 後端程式碼！', 'success');
+            showToast('已複製最新版 GAS 後端程式碼（支援題目、獎項顏色與紀錄全雲端同步）！', 'success');
         }
+
+        // ==========================================
+        // 2. EMAIL VERIFICATION (OTP FLOW)
+        // ==========================================
+        function sendVerificationCode() {
+            const emailInput = document.getElementById('user-email');
+            const email = emailInput.value.trim().toLowerCase();
+
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showToast('請輸入有效的電子信箱格式！', 'error');
+                emailInput.focus();
+                return;
+            }
+
+            if (verifiedEmailsSet.has(email)) {
+                showToast('此電子信箱已完成過問卷填寫與抽獎，每人限領乙次！', 'error');
+                return;
+            }
+
+            generatedOtp = String(Math.floor(100000 + Math.random() * 900000));
+            const sendBtn = document.getElementById('send-otp-btn');
+            const demoBox = document.getElementById('demo-otp-box');
+            const realBox = document.getElementById('real-otp-sent-box');
+            const otpSection = document.getElementById('otp-input-section');
+
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>發送中...</span>`;
+
+            if (GAS_WEB_APP_URL && GAS_WEB_APP_URL.startsWith('https://script.google.com/')) {
+                fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'sendOtp',
+                        email: email,
+                        otp: generatedOtp
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        demoBox.classList.add('hidden');
+                        realBox.classList.remove('hidden');
+                        otpSection.classList.remove('hidden');
+                        showToast('6 位數驗證碼已寄送至您的信箱！', 'success');
+                    } else {
+                        throw new Error(data.message || '寄信失敗');
+                    }
+                })
+                .catch(err => {
+                    console.error('GAS sendOtp error:', err);
+                    document.getElementById('demo-otp-code').textContent = generatedOtp;
+                    demoBox.classList.remove('hidden');
+                    realBox.classList.add('hidden');
+                    otpSection.classList.remove('hidden');
+                    showToast('Google 寄信連線異常，已切換為模擬驗證碼顯示。', 'info');
+                })
+                .finally(() => {
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = `<span>重新發送</span><i data-lucide="send" class="w-4 h-4"></i>`;
+                    lucide.createIcons();
+                });
+            } else {
+                setTimeout(() => {
+                    document.getElementById('demo-otp-code').textContent = generatedOtp;
+                    demoBox.classList.remove('hidden');
+                    realBox.classList.add('hidden');
+                    otpSection.classList.remove('hidden');
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = `<span>重新發送</span><i data-lucide="send" class="w-4 h-4"></i>`;
+                    lucide.createIcons();
+                    showToast('已產生模擬驗證碼，請輸入驗證！', 'success');
+                }, 400);
+            }
+        }
+
+        function verifyCode() {
+            const email = document.getElementById('user-email').value.trim().toLowerCase();
+            const enteredOtp = document.getElementById('otp-input').value.trim();
+
+            if (!generatedOtp) {
+                showToast('請先點擊「發送驗證碼」！', 'error');
+                return;
+            }
+            if (enteredOtp !== generatedOtp) {
+                showToast('驗證碼錯誤，請重新確認！', 'error');
+                return;
+            }
+
+            currentVerifiedEmail = email;
+            document.getElementById('verified-email-display').textContent = currentVerifiedEmail;
+            goToSurveyStep(2);
+            renderSurveyQuestions();
+            showToast('信箱驗證成功！請開始填寫問卷。', 'success');
+        }
+
+        function goToSurveyStep(step) {
+            const p1 = document.getElementById('step-1-panel');
+            const p2 = document.getElementById('step-2-panel');
+            const p3 = document.getElementById('step-3-panel');
+            const line = document.getElementById('progress-line');
+
+            p1.classList.toggle('hidden', step !== 1);
+            p2.classList.toggle('hidden', step !== 2);
+            p3.classList.toggle('hidden', step !== 3);
+
+            line.style.width = step === 1 ? '0%' : step === 2 ? '50%' : '100%';
+
+            for (let i = 1; i <= 3; i++) {
+                const circle = document.getElementById(`step-circle-${i}`);
+                const label = document.getElementById(`step-label-${i}`);
+                if (i <= step) {
+                    circle.className = 'w-9 h-9 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-bold flex items-center justify-center text-sm shadow-md ring-4 ring-white transition-colors';
+                    label.className = 'text-xs font-semibold text-sky-700 mt-1.5';
+                } else {
+                    circle.className = 'w-9 h-9 rounded-full bg-slate-200 text-slate-500 font-bold flex items-center justify-center text-sm ring-4 ring-white transition-colors';
+                    label.className = 'text-xs font-medium text-slate-500 mt-1.5';
+                }
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ==========================================
+        // 3. SURVEY RENDERING & SUBMISSION
+        // ==========================================
+        function renderSurveyQuestions() {
+            const container = document.getElementById('questions-container');
+            let html = '';
+            let currentSection = '';
+
+            surveyQuestions.forEach((q) => {
+                if (q.section && q.section !== currentSection) {
+                    currentSection = q.section;
+                    html += `
+                        <div class="pt-2">
+                            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#06182c] text-cyan-300 text-xs font-bold tracking-wide shadow-sm">
+                                <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                                <span>${currentSection}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                html += `<div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/90 space-y-4">`;
+                html += `<label class="block text-base font-bold text-slate-900">${q.title} ${q.required ? '<span class="text-rose-500">*</span>' : ''}</label>`;
+
+                if (q.type === 'choice') {
+                    html += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">`;
+                    (q.options || []).forEach(opt => {
+                        html += `
+                            <label class="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-sky-400 hover:bg-sky-50/50 cursor-pointer transition-all">
+                                <input type="radio" name="q_${q.id}" value="${opt}" ${q.required ? 'required' : ''} class="w-4 h-4 text-sky-600 focus:ring-sky-500">
+                                <span class="text-sm font-medium text-slate-700">${opt}</span>
+                            </label>
+                        `;
+                    });
+                    html += `</div>`;
+                } else if (q.type === 'choice_other') {
+                    html += `<div class="space-y-2.5">`;
+                    (q.options || []).forEach(opt => {
+                        html += `
+                            <label class="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-sky-400 hover:bg-sky-50/50 cursor-pointer transition-all">
+                                <input type="radio" name="q_${q.id}" value="${opt}" ${q.required ? 'required' : ''} class="w-4 h-4 text-sky-600 focus:ring-sky-500">
+                                <span class="text-sm font-medium text-slate-700">${opt}</span>
+                            </label>
+                        `;
+                    });
+                    html += `
+                        <div class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-sky-400 transition-all">
+                            <input type="radio" id="radio_other_${q.id}" name="q_${q.id}" value="__OTHER__" class="w-4 h-4 text-sky-600 focus:ring-sky-500">
+                            <label for="radio_other_${q.id}" class="text-sm font-medium text-slate-700 whitespace-nowrap">其他：</label>
+                            <input type="text" id="other_text_${q.id}" placeholder="請說明您的身分" onfocus="document.getElementById('radio_other_${q.id}').checked = true"
+                                class="flex-grow px-3 py-1.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 outline-none">
+                        </div>
+                    </div>`;
+                } else if (q.type === 'rating') {
+                    const labels = ['1 非常不滿意', '2 不滿意', '3 普通', '4 滿意', '5 非常滿意'];
+                    html += `<div class="grid grid-cols-5 gap-2 sm:gap-3 pt-1">`;
+                    for (let score = 1; score <= 5; score++) {
+                        html += `
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q_${q.id}" value="${score}" ${q.required ? 'required' : ''} class="peer sr-only">
+                                <div class="p-3 sm:p-4 rounded-xl border-2 border-slate-200 peer-checked:border-sky-600 peer-checked:bg-sky-50 peer-checked:text-sky-800 hover:border-sky-300 text-center transition-all">
+                                    <div class="text-lg sm:text-xl font-extrabold">${score}</div>
+                                    <div class="text-[10px] sm:text-xs text-slate-500 peer-checked:text-sky-700 mt-1 leading-tight">${labels[score - 1].split(' ')[1]}</div>
+                                </div>
+                            </label>
+                        `;
+                    }
+                    html += `</div>`;
+                } else if (q.type === 'text') {
+                    html += `
+                        <textarea name="q_${q.id}" rows="3" placeholder="${q.placeholder || '請輸入您的意見...'}" ${q.required ? 'required' : ''}
+                            class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none text-sm text-slate-800"></textarea>
+                    `;
+                }
+                html += `</div>`;
+            });
+
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function submitSurvey(event) {
+            event.preventDefault();
+            if (!currentVerifiedEmail) {
+                showToast('請先完成電子信箱驗證！', 'error');
+                goToSurveyStep(1);
+                return;
+            }
+
+            const form = document.getElementById('survey-form');
+            const formData = new FormData(form);
+            const answers = {};
+
+            for (const q of surveyQuestions) {
+                let val = formData.get(`q_${q.id}`) || '';
+                if (q.type === 'choice_other' && val === '__OTHER__') {
+                    const otherVal = document.getElementById(`other_text_${q.id}`).value.trim();
+                    if (!otherVal) {
+                        showToast('選擇「其他」時請填寫說明內容！', 'error');
+                        return;
+                    }
+                    val = `其他：${otherVal}`;
+                }
+                answers[q.id] = val;
+            }
+
+            const timestamp = new Date().toLocaleString('zh-TW', { hour12: false });
+            currentResponseId = 'resp_' + Date.now();
+
+            const record = {
+                id: currentResponseId,
+                email: currentVerifiedEmail,
+                timestamp: timestamp,
+                answers: answers,
+                prizeWon: null
+            };
+
+            responses.unshift(record);
+            verifiedEmailsSet.add(currentVerifiedEmail);
+            updateDashboardStats();
+
+            if (GAS_WEB_APP_URL && GAS_WEB_APP_URL.startsWith('https://script.google.com/')) {
+                fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'saveResponse',
+                        email: record.email,
+                        timestamp: record.timestamp,
+                        answers: record.answers,
+                        prizeWon: '尚未抽獎'
+                    })
+                }).catch(err => console.error('GAS saveResponse error:', err));
+            }
+
+            goToSurveyStep(3);
+            renderLotteryWheel();
+            showToast('問卷送出成功！請點擊轉盤進行抽獎。', 'success');
+        }
+
+        // ==========================================
+        // 4. LOTTERY WHEEL RENDERING & SPIN LOGIC
+        // ==========================================
+        function renderLotteryWheel() {
+            const svg = document.getElementById('wheel-svg');
+            if (!svg) return;
+
+            const activePrizes = lotteryPrizes.filter(p => Number(p.quantity) > 0);
+            const list = activePrizes.length > 0 ? activePrizes : lotteryPrizes;
+            const total = list.length;
+            const sliceAngle = 360 / total;
+            let pathsHtml = '';
+
+            list.forEach((prize, index) => {
+                const startAngle = index * sliceAngle;
+                const endAngle = startAngle + sliceAngle;
+                const startRad = (startAngle * Math.PI) / 180;
+                const endRad = (endAngle * Math.PI) / 180;
+
+                const x1 = 100 + 100 * Math.cos(startRad);
+                const y1 = 100 + 100 * Math.sin(startRad);
+                const x2 = 100 + 100 * Math.cos(endRad);
+                const y2 = 100 + 100 * Math.sin(endRad);
+                const largeArc = sliceAngle > 180 ? 1 : 0;
+
+                const midAngle = startAngle + sliceAngle / 2;
+                const midRad = (midAngle * Math.PI) / 180;
+                const textX = 100 + 62 * Math.cos(midRad);
+                const textY = 100 + 62 * Math.sin(midRad);
+
+                pathsHtml += `
+                    <path d="M100,100 L${x1},${y1} A100,100 0 ${largeArc},1 ${x2},${y2} Z" fill="${prize.color}" stroke="#ffffff" stroke-width="1.5"></path>
+                    <text x="${textX}" y="${textY}" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle" dominant-baseline="middle" transform="rotate(${midAngle + 90}, ${textX}, ${textY})">
+                        ${prize.name}
+                    </text>
+                `;
+            });
+
+            svg.innerHTML = pathsHtml;
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+
+            const availablePrizes = lotteryPrizes.filter(p => Number(p.quantity) > 0);
+            if (availablePrizes.length === 0) {
+                showToast('所有獎品皆已全數抽完！', 'error');
+                return;
+            }
+
+            isSpinning = true;
+            const spinBtn = document.getElementById('spin-btn');
+            spinBtn.disabled = true;
+            spinBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Weighted random selection among available prizes
+            const totalWeight = availablePrizes.reduce((sum, p) => sum + (Number(p.probability) || Number(p.quantity)), 0);
+            let randomVal = Math.random() * totalWeight;
+            let selectedPrize = availablePrizes[0];
+
+            for (const p of availablePrizes) {
+                const weight = Number(p.probability) || Number(p.quantity);
+                if (randomVal <= weight) {
+                    selectedPrize = p;
+                    break;
+                }
+                randomVal -= weight;
+            }
+
+            const prizeIndex = availablePrizes.findIndex(p => p.id === selectedPrize.id);
+            const sliceAngle = 360 / availablePrizes.length;
+            const targetSliceCenter = prizeIndex * sliceAngle + sliceAngle / 2;
+            const extraSpins = 360 * 6;
+            const targetRotation = currentWheelRotation + extraSpins + (360 - targetSliceCenter - (currentWheelRotation % 360));
+            currentWheelRotation = targetRotation;
+
+            const spinner = document.getElementById('wheel-spinner');
+            spinner.style.transform = `rotate(${currentWheelRotation}deg)`;
+
+            setTimeout(() => {
+                isSpinning = false;
+                selectedPrize.quantity = Math.max(0, Number(selectedPrize.quantity) - 1);
+
+                const record = responses.find(r => r.id === currentResponseId);
+                if (record) {
+                    record.prizeWon = selectedPrize.name;
+                }
+
+                document.getElementById('lottery-action-area').classList.add('hidden');
+                const resultCard = document.getElementById('lottery-result-card');
+                document.getElementById('prize-result-title').textContent = `恭喜獲得：${selectedPrize.name}`;
+                resultCard.classList.remove('hidden');
+
+                updateDashboardStats();
+                if (isAdminAuthenticated) {
+                    renderPrizeSettingsTable();
+                }
+
+                if (GAS_WEB_APP_URL && GAS_WEB_APP_URL.startsWith('https://script.google.com/') && record) {
+                    fetch(GAS_WEB_APP_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({
+                            action: 'saveResponse',
+                            email: record.email,
+                            timestamp: record.timestamp,
+                            answers: record.answers,
+                            prizeWon: selectedPrize.name
+                        })
+                    })
+                    .then(() => showToast('抽獎結果已同步寫入 Google 試算表！', 'success'))
+                    .catch(err => console.error('GAS update prize error:', err));
+                } else {
+                    showToast(`恭喜抽中「${selectedPrize.name}」！`, 'success');
+                }
+            }, 4100);
+        }
+
         // ==========================================
         // 5. MOCK DATA & AI REPORT GENERATOR
-        // ==========================================
-        // 7. MOCK DATA & AI REPORT GENERATOR
         // ==========================================
         function loadMockResponses() {
             const mockSamples = [
@@ -1707,7 +1477,6 @@
             content.classList.add('hidden');
             loading.classList.remove('hidden');
 
-            // Compute quantitative statistics
             const total = responses.length;
             const maleCount = responses.filter(r => r.answers.gender === '男').length;
             const femaleCount = responses.filter(r => r.answers.gender === '女').length;
@@ -1734,49 +1503,51 @@
             const overallAvg = (qStats.reduce((s, x) => s + x.avg, 0) / qStats.length).toFixed(2);
             const comments = responses.map(r => r.answers.q10).filter(c => c && c.trim().length > 0);
 
-            // Try Gemini API for enhanced narrative synthesis, fallback to local analytical report builder
             let reportHtml = '';
             try {
                 const promptText = `你是一位專業的活動成效評估顧問。請根據以下「全國高中職專題競賽」滿意度調查數據，撰寫一份正式、結構清晰的繁體中文《活動滿意度調查分析報告》（使用 HTML 標籤 <h2>, <h3>, <p>, <ul>, <li>, <strong> 排版，不要使用 markdown 符號）：
                 - 有效樣本數：${total} 份
-                - 性別分布：男性 ${maleCount} 人 (${Math.round(maleCount/total*100)}%)、女性 ${femaleCount} 人 (${Math.round(femaleCount/total*100)}%)
+                - 性別分布：男性 ${maleCount} 人 (${Math.round(maleCount / total * 100)}%)、女性 ${femaleCount} 人 (${Math.round(femaleCount / total * 100)}%)
                 - 身分分布：學生 ${studentCount} 人、教師 ${teacherCount} 人、其他 ${otherIdCount} 人
                 - 整體總平均滿意度：${overallAvg} / 5.00 分
                 - 各題平均分數：${qStats.map(q => `${q.title}: ${q.avg}分`).join('；')}
                 - 填答者文字建議：${comments.length > 0 ? comments.join(' / ') : '無文字建議'}`;
 
                 const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-                const res = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: promptText }] }]
-                    })
-                });
-                const result = await res.json();
-                const aiText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (aiText) {
-                    reportHtml = aiText.replace(/```html|```/g, '').trim();
-                } else {
-                    throw new Error('Fallback to local report');
+                if (apiKey) {
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                    const res = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: promptText }] }]
+                        })
+                    });
+                    const result = await res.json();
+                    const aiText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (aiText) {
+                        reportHtml = aiText.replace(/```html|```/g, '').trim();
+                    }
                 }
             } catch (err) {
+                console.warn('Fallback to local report builder:', err);
+            }
+
+            if (!reportHtml) {
                 reportHtml = `
-                    <h2>全國高中職專題競賽 — 滿意度調查綜合分析報告</h2>
-                    <h3>一、受訪者基本資料結構</h3>
-                    <p>本次問卷共回收 <strong>${total} 份</strong> 經過電子信箱驗證之有效樣本。在生理性別分布上，男性佔 <strong>${Math.round(maleCount/total*100)}%</strong>（${maleCount} 人），女性佔 <strong>${Math.round(femaleCount/total*100)}%</strong>（${femaleCount} 人）；在參與身分方面，以<strong>學生族群（${studentCount} 人）</strong>為主體，其次為<strong>指導教師（${teacherCount} 人）</strong>及其他與會貴賓（${otherIdCount} 人）。</p>
-                    <h3>二、整體滿意度量化表現</h3>
-                    <p>本次活動九大滿意度指標之整體總平均高達 <strong>${overallAvg} 分（滿分 5.00 分）</strong>，顯示與會師生對競賽辦理成效給予高度肯定。</p>
+                    <h2>全國高中職專題競賽 — 活動滿意度調查分析報告</h2>
+                    <h3>一、填答樣本基本結構分析</h3>
+                    <p>本次調查共回收有效驗證問卷 <strong>${total}</strong> 份（100% 完成電子信箱驗證）。受訪者生理性別為男性 <strong>${maleCount}</strong> 人（${Math.round(maleCount / total * 100)}%）、女性 <strong>${femaleCount}</strong> 人（${Math.round(femaleCount / total * 100)}%）；身分別以學生 <strong>${studentCount}</strong> 人為主，教師 <strong>${teacherCount}</strong> 人，其他貴賓 <strong>${otherIdCount}</strong> 人。</p>
+                    <h3>二、整體滿意度與各構面表現</h3>
+                    <p>本次活動九大滿意度指標總平均高達 <strong>${overallAvg} 分</strong>（滿分 5.00 分），顯示與會師生對競賽整體規劃給予高度肯定。</p>
                     <ul>
-                        <li><strong>最高評價指標：</strong>「${highestQ.title}」獲得最高平均 <strong>${highestQ.avg} 分</strong>，展現活動規劃與執行深獲認可。</li>
-                        <li><strong>持續精進指標：</strong>「${lowestQ.title}」平均為 <strong>${lowestQ.avg} 分</strong>（仍維持高水準表現），可作為下屆賽程微調之優先參考。</li>
+                        <li><strong>最高評價項目：</strong>「${highestQ.title}」獲得最高平均分 <strong>${highestQ.avg} 分</strong>。</li>
+                        <li><strong>相對可精進項目：</strong>「${lowestQ.title}」平均分為 <strong>${lowestQ.avg} 分</strong>，可作為下屆籌備優先優化參考。</li>
                     </ul>
-                    <h3>三、質化意見彙整與未來建議</h3>
+                    <h3>三、與會者質化建議彙整</h3>
                     ${comments.length > 0
                         ? `<ul>${comments.map(c => `<li>${c}</li>`).join('')}</ul>`
-                        : `<p>本次受訪者對活動整體流程均表滿意，暫無額外負面建議。</p>`}
-                    <p><strong>總結建議：</strong>建議延續本屆優良之行政支援與評審回饋機制，並依據與會者針對時程細節之回饋適度彈性調整，持續提升全國高中職專題競賽品牌影響力。</p>
+                        : `<p>本次填答者未提出額外負面反映，整體流程順暢圓滿。</p>`}
                 `;
             }
 
@@ -1784,7 +1555,7 @@
             content.innerHTML = reportHtml;
             content.classList.remove('hidden');
             copyBtn.classList.remove('hidden');
-            showToast('滿意度分析報告已自動生成！', 'success');
+            showToast('滿意度分析報告已生成完成！', 'success');
         }
 
         function copyReportText() {
@@ -1795,12 +1566,86 @@
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-            showToast('已複製分析報告純文字內容！', 'success');
+            showToast('已複製報告純文字內容！', 'success');
         }
 
         // ==========================================
-        // 8. QUESTION EDITOR MODAL
+        // 6. ADMIN AUTHENTICATION & VIEW NAVIGATION
         // ==========================================
+        function switchView(view) {
+            const surveyView = document.getElementById('view-survey');
+            const adminView = document.getElementById('view-admin');
+            const navSurveyBtn = document.getElementById('nav-survey-btn');
+            const navAdminBtn = document.getElementById('nav-admin-btn');
+
+            if (view === 'survey') {
+                surveyView.classList.remove('hidden');
+                adminView.classList.add('hidden');
+                navSurveyBtn.className = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-sm flex items-center gap-1.5';
+                navAdminBtn.className = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white flex items-center gap-1.5';
+            } else {
+                if (!isAdminAuthenticated) {
+                    pendingAdminAction = () => switchView('admin');
+                    openAdminLoginModal();
+                    return;
+                }
+                surveyView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+                navAdminBtn.className = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-sm flex items-center gap-1.5';
+                navSurveyBtn.className = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white flex items-center gap-1.5';
+                updateDashboardStats();
+                renderPrizeSettingsTable();
+                syncFromGoogleSheet(false);
+            }
+            lucide.createIcons();
+        }
+
+        function openAdminLoginModal() {
+            document.getElementById('admin-login-modal').classList.remove('hidden');
+            document.getElementById('admin-username').focus();
+        }
+
+        function closeAdminLoginModal() {
+            document.getElementById('admin-login-modal').classList.add('hidden');
+            document.getElementById('admin-login-form').reset();
+        }
+
+        function handleAdminLogin(event) {
+            event.preventDefault();
+            const user = document.getElementById('admin-username').value.trim();
+            const pass = document.getElementById('admin-password').value;
+
+            if (user === ADMIN_ACCOUNT && pass === ADMIN_PASSWORD) {
+                isAdminAuthenticated = true;
+                closeAdminLoginModal();
+                showToast('管理者驗證成功！歡迎進入後台。', 'success');
+                if (typeof pendingAdminAction === 'function') {
+                    const action = pendingAdminAction;
+                    pendingAdminAction = null;
+                    action();
+                } else {
+                    switchView('admin');
+                }
+            } else {
+                showToast('管理者帳號或密碼錯誤！', 'error');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdminAuthenticated = false;
+            switchView('survey');
+            showToast('已安全登出管理後台。', 'info');
+        }
+
+        function requireAdminForQuestionEditor() {
+            if (!isAdminAuthenticated) {
+                pendingAdminAction = () => openQuestionEditorModal();
+                openAdminLoginModal();
+            } else {
+                openQuestionEditorModal();
+            }
+        }
+
         function openQuestionEditorModal() {
             renderModalQuestions();
             document.getElementById('question-editor-modal').classList.remove('hidden');
@@ -1811,6 +1656,280 @@
             document.getElementById('question-editor-modal').classList.add('hidden');
         }
 
+        // ==========================================
+        // 7. ADMIN DASHBOARD STATS, PRIZE & DELETE
+        // ==========================================
+        let pendingDeleteResponseId = null;
+
+        function updateDashboardStats() {
+            const total = responses.length;
+            document.getElementById('response-count-badge').textContent = total;
+            document.getElementById('stat-total-responses').textContent = total;
+
+            const ratingQuestions = surveyQuestions.filter(q => q.type === 'rating');
+            let sumAll = 0;
+            let countAll = 0;
+            let positiveCount = 0;
+
+            responses.forEach(r => {
+                ratingQuestions.forEach(q => {
+                    const val = Number(r.answers[q.id]);
+                    if (val >= 1 && val <= 5) {
+                        sumAll += val;
+                        countAll++;
+                        if (val >= 4) positiveCount++;
+                    }
+                });
+            });
+
+            const avgScore = countAll > 0 ? (sumAll / countAll).toFixed(2) : '0.0';
+            const posRate = countAll > 0 ? Math.round((positiveCount / countAll) * 100) : 0;
+
+            document.getElementById('stat-avg-score').textContent = avgScore;
+            document.getElementById('stat-satisfaction-rate').textContent = `正面評價佔比（4~5分）：${posRate}%`;
+
+            const prizesWonCount = responses.filter(r => r.prizeWon).length;
+            const remainingTotal = lotteryPrizes.reduce((s, p) => s + Number(p.quantity), 0);
+            document.getElementById('stat-prizes-won').textContent = prizesWonCount;
+            document.getElementById('stat-prizes-remaining').textContent = `目前剩餘獎品庫存：${remainingTotal} 份`;
+
+            renderQuestionCharts();
+            renderResponsesTable();
+        }
+
+        function renderQuestionCharts() {
+            const container = document.getElementById('charts-container');
+            if (!container) return;
+
+            const ratingQuestions = surveyQuestions.filter(q => q.type === 'rating');
+            container.innerHTML = ratingQuestions.map(q => {
+                let sum = 0, cnt = 0;
+                responses.forEach(r => {
+                    const v = Number(r.answers[q.id]);
+                    if (v) { sum += v; cnt++; }
+                });
+                const avg = cnt > 0 ? (sum / cnt).toFixed(2) : '0.00';
+                const pct = cnt > 0 ? Math.round((sum / (cnt * 5)) * 100) : 0;
+
+                return `
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+                        <div class="flex justify-between items-start gap-2 text-xs font-semibold text-slate-700">
+                            <span>${q.title}</span>
+                            <span class="text-sky-700 font-bold shrink-0">${avg} / 5.0</span>
+                        </div>
+                        <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderResponsesTable() {
+            const tbody = document.getElementById('responses-tbody');
+            if (!tbody) return;
+
+            if (responses.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">尚無填答紀錄，請先填寫問卷或點擊上方「匯入模擬填答數據」。</td></tr>`;
+                return;
+            }
+
+            const ratingQuestions = surveyQuestions.filter(q => q.type === 'rating');
+            tbody.innerHTML = responses.map(r => {
+                let sum = 0, cnt = 0;
+                ratingQuestions.forEach(q => {
+                    const v = Number(r.answers[q.id]);
+                    if (v) { sum += v; cnt++; }
+                });
+                const avg = cnt > 0 ? (sum / cnt).toFixed(1) : '-';
+
+                return `
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="py-3 px-3 font-medium text-slate-800">${r.email}</td>
+                        <td class="py-3 px-3 text-slate-600">${r.answers.gender || '-'} / ${r.answers.identity || '-'}</td>
+                        <td class="py-3 px-3 text-xs text-slate-500">${r.timestamp}</td>
+                        <td class="py-3 px-3 font-bold text-sky-700">${avg} 分</td>
+                        <td class="py-3 px-3">
+                            ${r.prizeWon
+                                ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">${r.prizeWon}</span>`
+                                : `<span class="text-xs text-slate-400">尚未抽獎</span>`}
+                        </td>
+                        <td class="py-3 px-3 text-xs text-slate-600 max-w-xs truncate" title="${r.answers.q10 || ''}">${r.answers.q10 || '—'}</td>
+                        <td class="py-3 px-3 text-right">
+                            <button type="button" onclick="requestDeleteResponse('${r.id}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-semibold transition-all">
+                                刪除
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function requestDeleteResponse(responseId) {
+            const record = responses.find(r => r.id === responseId);
+            if (!record) return;
+
+            pendingDeleteResponseId = responseId;
+            const descEl = document.getElementById('delete-confirm-desc');
+            if (record.prizeWon) {
+                descEl.innerHTML = `確定要刪除 <strong>${record.email}</strong> 的紀錄嗎？<br><span class="text-rose-600 font-semibold">此筆已抽中「${record.prizeWon}」，刪除後將自動把該獎項剩餘庫存 +1</span>，並釋出信箱填答資格。`;
+            } else {
+                descEl.innerHTML = `確定要刪除 <strong>${record.email}</strong> 的問卷紀錄嗎？刪除後將釋出該電子信箱的填答資格。`;
+            }
+            document.getElementById('delete-confirm-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeDeleteConfirmModal() {
+            pendingDeleteResponseId = null;
+            document.getElementById('delete-confirm-modal').classList.add('hidden');
+        }
+
+        function confirmDeleteResponse() {
+            if (!pendingDeleteResponseId) return;
+            const idx = responses.findIndex(r => r.id === pendingDeleteResponseId);
+            if (idx === -1) {
+                closeDeleteConfirmModal();
+                return;
+            }
+
+            const record = responses[idx];
+            if (record.prizeWon) {
+                const prizeObj = lotteryPrizes.find(p => p.name === record.prizeWon);
+                if (prizeObj) {
+                    prizeObj.quantity = Number(prizeObj.quantity) + 1;
+                }
+            }
+
+            verifiedEmailsSet.delete(String(record.email || '').toLowerCase().trim());
+            responses.splice(idx, 1);
+
+            if (GAS_WEB_APP_URL && GAS_WEB_APP_URL.startsWith('https://script.google.com/')) {
+                fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'deleteResponse',
+                        email: record.email
+                    })
+                }).catch(err => console.error('GAS deleteResponse error:', err));
+            }
+
+            closeDeleteConfirmModal();
+            updateDashboardStats();
+            renderPrizeSettingsTable();
+            renderLotteryWheel();
+            showToast(record.prizeWon ? `已刪除紀錄並將「${record.prizeWon}」庫存 +1！` : '已成功刪除該筆填答紀錄！', 'success');
+        }
+
+        function renderPrizeSettingsTable() {
+            const tbody = document.getElementById('prize-settings-tbody');
+            if (!tbody) return;
+
+            tbody.innerHTML = lotteryPrizes.map((p, idx) => `
+                <tr>
+                    <td class="py-2.5 px-2">
+                        <input type="text" id="prize_name_${idx}" value="${p.name}" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm">
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="number" min="0" id="prize_qty_${idx}" value="${p.quantity}" class="w-24 px-3 py-1.5 rounded-lg border border-slate-300 text-sm">
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="number" step="0.01" min="0" max="100" id="prize_prob_${idx}" value="${p.probability}" oninput="updateTotalProbDisplay()" class="w-24 px-3 py-1.5 rounded-lg border border-slate-300 text-sm">
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="color" id="prize_color_${idx}" value="${p.color}" class="w-10 h-8 rounded cursor-pointer border border-slate-200">
+                    </td>
+                    <td class="py-2.5 px-2 text-right">
+                        <button type="button" onclick="removePrizeRow(${idx})" class="text-xs text-rose-600 hover:underline font-medium">移除</button>
+                    </td>
+                </tr>
+            `).join('');
+            updateTotalProbDisplay();
+        }
+
+        function updateTotalProbDisplay() {
+            let sum = 0;
+            lotteryPrizes.forEach((_, idx) => {
+                const el = document.getElementById(`prize_prob_${idx}`);
+                if (el) sum += Number(el.value) || 0;
+            });
+            const display = document.getElementById('total-prob-display');
+            if (display) {
+                display.textContent = `目前總機率：${sum.toFixed(2)}%`;
+            }
+        }
+
+        function addPrizeRow() {
+            lotteryPrizes.push({
+                id: 'p_' + Date.now(),
+                name: '新獎項',
+                initialQuantity: 10,
+                quantity: 10,
+                probability: 0,
+                color: '#6366f1'
+            });
+            renderPrizeSettingsTable();
+        }
+
+        function removePrizeRow(idx) {
+            if (lotteryPrizes.length <= 1) {
+                showToast('至少須保留一個獎項！', 'error');
+                return;
+            }
+            lotteryPrizes.splice(idx, 1);
+            renderPrizeSettingsTable();
+        }
+
+        function savePrizeSettings() {
+            lotteryPrizes.forEach((p, idx) => {
+                const newName = document.getElementById(`prize_name_${idx}`).value.trim() || p.name;
+                const newRemainingQty = Math.max(0, Number(document.getElementById(`prize_qty_${idx}`).value) || 0);
+                const wonCount = responses.filter(r => r.prizeWon === newName).length;
+                p.name = newName;
+                p.quantity = newRemainingQty;
+                p.initialQuantity = newRemainingQty + wonCount;
+                p.probability = Math.max(0, Number(document.getElementById(`prize_prob_${idx}`).value) || 0);
+                p.color = document.getElementById(`prize_color_${idx}`).value;
+            });
+            renderLotteryWheel();
+            updateDashboardStats();
+
+            if (GAS_WEB_APP_URL && GAS_WEB_APP_URL.startsWith('https://script.google.com/')) {
+                fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'savePrizes',
+                        prizes: lotteryPrizes.map(p => ({
+                            id: p.id,
+                            name: p.name,
+                            initialQuantity: p.initialQuantity,
+                            probability: p.probability,
+                            color: p.color
+                        }))
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast('抽獎獎品、庫存與轉盤顏色已同步儲存至 Google 試算表！', 'success');
+                    } else {
+                        showToast('設定已套用，但試算表同步異常，請確認 GAS 已更新部署。', 'info');
+                    }
+                })
+                .catch(err => {
+                    console.error('GAS savePrizes error:', err);
+                    showToast('設定已於本機生效（試算表連線異常）。', 'info');
+                });
+            } else {
+                showToast('抽獎獎品與庫存設定已儲存！', 'success');
+            }
+        }
+
+        // ==========================================
+        // 8. QUESTION EDITOR MODAL FUNCTIONS
+        // ==========================================
         function renderModalQuestions() {
             const list = document.getElementById('modal-questions-list');
             list.innerHTML = surveyQuestions.map((q, idx) => `
@@ -1864,7 +1983,31 @@
             });
             closeQuestionEditorModal();
             renderSurveyQuestions();
-            showToast('問卷題目結構已更新！', 'success');
+
+            if (GAS_WEB_APP_URL && GAS_WEB_APP_URL.startsWith('https://script.google.com/')) {
+                fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'saveQuestions',
+                        questions: surveyQuestions
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast('問卷題目結構已永久同步儲存至 Google 試算表！', 'success');
+                    } else {
+                        showToast('題目已更新，但試算表同步異常，請確認 GAS 已更新部署。', 'info');
+                    }
+                })
+                .catch(err => {
+                    console.error('GAS saveQuestions error:', err);
+                    showToast('題目已於本機更新（試算表連線異常）。', 'info');
+                });
+            } else {
+                showToast('問卷題目結構已更新！', 'success');
+            }
         }
 
         // ==========================================
@@ -1903,6 +2046,7 @@
             renderSurveyQuestions();
             renderLotteryWheel();
             lucide.createIcons();
+            syncFromGoogleSheet(false);
         };
     </script>
 </body>
