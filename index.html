@@ -177,7 +177,7 @@
                 <div class="max-w-md mx-auto mt-8 space-y-5">
                     <!-- Email Input -->
                     <div>
-                        <label for="user-email" class="block text-sm font-semibold text-slate-700 mb-1.5">電子信箱 (Email) <span class="text-rose-500">*</span></label>
+                        <label for="user-email" class="block text-sm font-semibold text-slate-700 mb-1.5">電子信箱 (E-mail) <span class="text-rose-500">*</span></label>
                         <div class="flex flex-col sm:flex-row gap-2">
                             <input type="email" id="user-email" placeholder="example@email.com" 
                                 class="flex-grow px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all text-slate-800">
@@ -234,10 +234,6 @@
                                 <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
                                 已驗證信箱：<span id="verified-email-display" class="font-semibold"></span>
                             </span>
-                            <button type="button" onclick="requireAdminForQuestionEditor()" class="text-xs text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 underline">
-                                <i data-lucide="lock" class="w-3.5 h-3.5"></i>
-                                自訂/修改問卷題目 (管理者)
-                            </button>
                         </div>
                         <h2 id="survey-title" class="text-2xl sm:text-3xl font-bold text-slate-900">全國高中職專題競賽 — 滿意度調查表</h2>
                         <p id="survey-desc" class="text-slate-600 mt-2 text-sm sm:text-base leading-relaxed">
@@ -333,6 +329,10 @@
                     <p class="text-sm text-slate-500 mt-0.5">即時統計滿意度指標、自動生成文字洞察報告，並可自訂抽獎參數。</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="openQuestionEditorModal()" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-medium rounded-xl text-xs sm:text-sm transition-all flex items-center gap-1.5">
+                        <i data-lucide="file-edit" class="w-4 h-4"></i>
+                        <span>編輯問卷題目</span>
+                    </button>
                     <button id="sync-sheet-btn" onclick="syncFromGoogleSheet(true)" class="px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 font-medium rounded-xl text-xs sm:text-sm transition-all flex items-center gap-1.5">
                         <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                         <span>從試算表同步資料</span>
@@ -451,6 +451,7 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                                <th class="py-3 px-2">順序</th>
                                 <th class="py-3 px-2">獎項名稱</th>
                                 <th class="py-3 px-2">剩餘數量 (個)</th>
                                 <th class="py-3 px-2">中獎權重/機率 (%)</th>
@@ -490,7 +491,7 @@
                 <div class="space-y-3">
                     <label for="gas-url-input" class="block text-sm font-semibold text-slate-700">Google Apps Script 網頁應用程式網址 (Exec URL)</label>
                     <div class="flex flex-col sm:flex-row gap-2">
-                        <input type="url" id="gas-url-input" value="https://script.google.com/macros/s/AKfycbxcrS0mjR4Sr3IRlxiFa99392KKBDOBBXilQIFqthVEAuERv4RhnMz3zPjv9jzzcemLyw/exec" placeholder="https://script.google.com/macros/s/AKfycb.../exec"
+                        <input type="url" id="gas-url-input" value="https://script.google.com/macros/s/AKfycbwFWFzlY6ipmJXYw3tZTFpZWiE0fIAmD45EuZZfUgkGm4_pGep5VdPUuQeYQysxOp3kuA/exec" placeholder="https://script.google.com/macros/s/AKfycb.../exec"
                             class="flex-grow px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none text-sm font-mono">
                         <button type="button" onclick="saveGasSettings()" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-xl text-sm shadow-sm transition-all whitespace-nowrap">
                             儲存並啟用連線
@@ -675,7 +676,7 @@
             {
                 id: 'gender',
                 section: '壹、基本資料',
-                title: '1. 您的生理性別',
+                title: '1. 生理性別',
                 type: 'choice',
                 required: true,
                 options: ['男', '女']
@@ -683,7 +684,7 @@
             {
                 id: 'identity',
                 section: '壹、基本資料',
-                title: '2. 您的身分別',
+                title: '2. 身分別',
                 type: 'choice_other',
                 required: true,
                 options: ['學生', '教師']
@@ -762,11 +763,12 @@
         ];
 
         const initialPrizesStock = [
-            { id: 'p1', name: '資料夾', initialQuantity: 90, quantity: 90, probability: 27.27, color: '#0284c7' },
-            { id: 'p2', name: '不織布袋', initialQuantity: 60, quantity: 60, probability: 18.18, color: '#0d9488' },
-            { id: 'p3', name: '徽章', initialQuantity: 60, quantity: 60, probability: 18.18, color: '#f59e0b' },
-            { id: 'p4', name: '原子筆', initialQuantity: 60, quantity: 60, probability: 18.18, color: '#6366f1' },
-            { id: 'p5', name: '識別證套', initialQuantity: 60, quantity: 60, probability: 18.19, color: '#ec4899' }
+            { id: 'p1', name: '識別證套', initialQuantity: 10, quantity: 10, probability: 3.03, color: '#ff0000' },
+            { id: 'p2', name: '不織布袋', initialQuantity: 50, quantity: 50, probability: 15.15, color: '#28958c' },
+            { id: 'p3', name: '學院徽章', initialQuantity: 80, quantity: 80, probability: 24.24, color: '#f59e0b' },
+            { id: 'p4', name: '鋼珠筆', initialQuantity: 90, quantity: 90, probability: 27.27, color: '#cd62f3' },
+            { id: 'p5', name: '資料夾', initialQuantity: 100, quantity: 100, probability: 30.31, color: '#1da7ed' }
+
         ];
 
         let lotteryPrizes = JSON.parse(JSON.stringify(initialPrizesStock));
@@ -1828,6 +1830,18 @@ function doPost(e) {
 
             tbody.innerHTML = lotteryPrizes.map((p, idx) => `
                 <tr>
+                    <td class="py-2.5 px-2 whitespace-nowrap">
+                        <div class="inline-flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+                            <button type="button" onclick="movePrizeRow(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="上移"
+                                class="p-1 rounded hover:bg-white text-slate-600 disabled:opacity-30 disabled:pointer-events-none transition-all">
+                                <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button type="button" onclick="movePrizeRow(${idx}, 1)" ${idx === lotteryPrizes.length - 1 ? 'disabled' : ''} title="下移"
+                                class="p-1 rounded hover:bg-white text-slate-600 disabled:opacity-30 disabled:pointer-events-none transition-all">
+                                <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </td>
                     <td class="py-2.5 px-2">
                         <input type="text" id="prize_name_${idx}" value="${p.name}" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm">
                     </td>
@@ -1846,6 +1860,31 @@ function doPost(e) {
                 </tr>
             `).join('');
             updateTotalProbDisplay();
+            lucide.createIcons();
+        }
+
+        function syncCurrentPrizeInputsToMemory() {
+            lotteryPrizes.forEach((p, idx) => {
+                const nameEl = document.getElementById(`prize_name_${idx}`);
+                const qtyEl = document.getElementById(`prize_qty_${idx}`);
+                const probEl = document.getElementById(`prize_prob_${idx}`);
+                const colorEl = document.getElementById(`prize_color_${idx}`);
+                if (nameEl) p.name = nameEl.value.trim() || p.name;
+                if (qtyEl) p.quantity = Math.max(0, Number(qtyEl.value) || 0);
+                if (probEl) p.probability = Math.max(0, Number(probEl.value) || 0);
+                if (colorEl) p.color = colorEl.value;
+            });
+        }
+
+        function movePrizeRow(idx, direction) {
+            const targetIdx = idx + direction;
+            if (targetIdx < 0 || targetIdx >= lotteryPrizes.length) return;
+            syncCurrentPrizeInputsToMemory();
+            const temp = lotteryPrizes[idx];
+            lotteryPrizes[idx] = lotteryPrizes[targetIdx];
+            lotteryPrizes[targetIdx] = temp;
+            renderPrizeSettingsTable();
+            renderLotteryWheel();
         }
 
         function updateTotalProbDisplay() {
